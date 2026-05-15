@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>parking24 Sprint 1 QA 검증 보고서</title>
+<style>
+  :root {
+    --primary: #FF6B35;
+    --primary-dark: #E55A28;
+    --bg: #F4F5F7;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #DC2626;
+    --info: #3B82F6;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Pretendard", "Apple SD Gothic Neo", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  header {
+    background: linear-gradient(135deg, #1E40AF 0%, #3730A3 100%);
+    color: #fff;
+    padding: 32px 20px 28px;
+    border-bottom: 4px solid var(--info);
+  }
+  header .container { max-width: 820px; margin: 0 auto; }
+  header h1 { margin: 0 0 8px; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; }
+  header h1 .accent { color: #93C5FD; }
+  header .meta { font-size: 13px; color: #C7D2FE; display: flex; gap: 12px; flex-wrap: wrap; }
+  header .meta span::before { content: "·"; margin-right: 12px; color: #818CF8; }
+  header .meta span:first-child::before { content: ""; margin: 0; }
+  header .backlinks { margin-top: 10px; font-size: 13px; }
+  header .backlinks a { color: #93C5FD; text-decoration: none; margin-right: 14px; }
+  main { max-width: 820px; margin: 0 auto; padding: 20px 16px 48px; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  @media (min-width: 600px) { .summary-grid { grid-template-columns: repeat(4, 1fr); } }
+  .summary { background: var(--card); border-radius: 10px; padding: 16px; border: 1px solid var(--border); text-align: center; }
+  .summary.pass { border-color: var(--success); background: #ECFDF5; }
+  .summary .id { font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; }
+  .summary .label { font-size: 13px; font-weight: 700; margin: 4px 0; }
+  .summary .verdict { font-size: 20px; font-weight: 900; color: var(--success); }
+  section { background: var(--card); border-radius: 12px; padding: 20px; margin: 16px 0; border: 1px solid var(--border); }
+  section h2 { font-size: 18px; margin: 0 0 14px; font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+  section h2 .verdict { background: var(--success); color: #fff; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  section h2 .verdict.warn { background: var(--warning); }
+  section h3 { font-size: 14px; margin: 16px 0 6px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  code { background: #F3F4F6; padding: 2px 6px; border-radius: 4px; word-break: break-all; }
+  pre { background: #0F172A; color: #E2E8F0; padding: 14px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 12px; line-height: 1.55; white-space: pre; }
+  pre .ok { color: #86EFAC; }
+  pre .key { color: #93C5FD; }
+  pre .num { color: #FCD34D; }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  .table-wrap { overflow-x: auto; margin: 10px 0; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 480px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: #F9FAFB; font-weight: 700; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  tbody tr:last-child td { border-bottom: none; }
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+  .badge-pass { background: #D1FAE5; color: #065F46; }
+  .badge-info { background: #DBEAFE; color: #1E40AF; }
+  .badge-warn { background: #FEF3C7; color: #92400E; }
+  .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #F3F4F6;
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-row .icon { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--success); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .check-row .icon.warn { background: var(--warning); }
+  .check-row .body { flex: 1; min-width: 0; }
+  .check-row .body strong { display: block; font-size: 14.5px; margin-bottom: 2px; }
+  .check-row .body p { margin: 0; font-size: 13.5px; color: var(--text-muted); }
+  .callout { border-left: 4px solid var(--info); background: #EFF6FF; padding: 12px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 14px; }
+  .callout.warn { border-color: var(--warning); background: #FFFBEB; }
+  footer { text-align: center; color: var(--text-muted); font-size: 12px; padding: 32px 16px; border-top: 1px solid var(--border); margin-top: 32px; }
+  a { color: var(--primary-dark); }
+  @media (min-width: 600px) { body { font-size: 15.5px; } header h1 { font-size: 28px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>🔬 Sprint 1 <span class="accent">QA 검증</span> 보고서</h1>
+    <div class="meta">
+      <span>2026-05-15</span>
+      <span>4/4 PR PASS</span>
+      <span>코드 + DB + Production curl 검증</span>
+    </div>
+    <div class="backlinks">
+      <a href="index.html">← 진입점</a>
+      <a href="parking24-sprint1-report.html">↩ Sprint 1 결과</a>
+      <a href="parking24-admin-improvements.html">→ 전체 로드맵</a>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="callout">
+    Sprint 1 4 PR 의 deliverable 을 <strong>production HTML / Supabase Management API / supabase-js admin client / 정적 코드</strong> 4축으로 검증. 4건 모두 PASS, 잔여 권장 사항 1건.
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary pass"><div class="id">B8</div><div class="label">login title</div><div class="verdict">✅</div></div>
+    <div class="summary pass"><div class="id">A2</div><div class="label">Migration 031</div><div class="verdict">✅</div></div>
+    <div class="summary pass"><div class="id">A1</div><div class="label">Pagination</div><div class="verdict">✅</div></div>
+    <div class="summary pass"><div class="id">B5</div><div class="label">EditableBlock</div><div class="verdict">✅</div></div>
+  </div>
+
+  <section>
+    <h2>B8 · /admin/login title <span class="verdict">PASS</span></h2>
+
+    <h3>1. production HTML</h3>
+    <pre><code>$ curl -sS https://parking24.me/admin/login | grep -oE &apos;&lt;title&gt;[^&lt;]*&lt;/title&gt;&apos;
+<span class="ok">&lt;title&gt;관리자 로그인 | PARKING 24&lt;/title&gt;</span>
+&lt;meta name=&quot;description&quot; content=&quot;PARKING 24 관리자 콘솔 로그인&quot;/&gt;
+&lt;meta name=&quot;robots&quot; content=&quot;<span class="ok">noindex, nofollow</span>&quot;/&gt;</code></pre>
+
+    <h3>2. /admin 진입 차단</h3>
+    <pre><code>$ curl -sSI https://parking24.me/admin
+<span class="ok">HTTP 307</span> → location: <span class="key">https://parking24.me/admin/login</span></code></pre>
+
+    <h3>3. 보안 헤더</h3>
+    <ul>
+      <li><code>cache-control: private, no-cache, no-store</code> ✓</li>
+      <li><code>x-frame-options: SAMEORIGIN</code> ✓</li>
+      <li><code>x-content-type-options: nosniff</code> ✓</li>
+      <li><code>strict-transport-security: max-age=63072000; includeSubDomains; preload</code> ✓</li>
+      <li>CSP <code>default-src 'self'</code> + Supabase 도메인 허용 ✓</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>A2 · Migration 031 인덱스 <span class="verdict">PASS</span></h2>
+
+    <h3>1. pg_indexes — 3개 모두 production 생성</h3>
+    <pre><code>$ SELECT indexname, indexdef FROM pg_indexes
+  WHERE tablename = &apos;reservations&apos; AND indexname LIKE &apos;idx_%created%&apos;;
+
+<span class="ok">idx_reservations_created_at</span>
+  USING btree (created_at DESC)
+
+<span class="ok">idx_reservations_partner_created</span>  ← partial
+  USING btree (partner_id, created_at DESC)
+  WHERE (partner_id IS NOT NULL)
+
+<span class="ok">idx_reservations_airport_created</span>
+  USING btree (airport_id, created_at DESC)</code></pre>
+
+    <h3>2. EXPLAIN ANALYZE (현재 39 row, planner 자동 선택)</h3>
+    <pre><code>EXPLAIN ANALYZE SELECT id, created_at FROM reservations
+ORDER BY created_at DESC LIMIT 50;
+
+<span class="key">Limit  (cost=3.42..3.52)</span>
+  -&gt; Sort
+       -&gt; <span class="num">Seq Scan</span> on reservations  (Buffers: hit=2)
+Execution Time: <span class="ok">0.205 ms</span></code></pre>
+    <div class="callout warn">
+      <strong>참고</strong>: 현재 reservations 39 row 라 PostgreSQL planner 가 Seq Scan 을 더 싸게 판단해서 인덱스 미사용. 이는 <strong>정상 동작</strong> — 데이터 누적되면(수천 row 이상) planner 가 자동으로 인덱스로 전환.
+    </div>
+
+    <h3>3. 인덱스 적중 가능성 검증 (<code>SET enable_seqscan = off</code>)</h3>
+    <pre><code>SET LOCAL enable_seqscan = off;
+EXPLAIN ANALYZE SELECT ... ORDER BY created_at DESC LIMIT 50;
+
+<span class="key">Limit  (cost=0.14..5.03)</span>
+  -&gt; <span class="ok">Index Scan using idx_reservations_created_at</span>
+Execution Time: 1.399 ms  ← 인덱스 실제 사용 가능 ✓</code></pre>
+    <p>인덱스가 <strong>실제 사용 가능</strong> 함을 확인. 광고 시작 후 데이터 누적되면 planner 가 자동 전환.</p>
+  </section>
+
+  <section>
+    <h2>A1 · Pagination API <span class="verdict">PASS</span></h2>
+
+    <h3>1. range / count: exact 동작 검증</h3>
+    <pre><code>$ supabase.from(&quot;reservations&quot;)
+    .select(&quot;id&quot;, { count: &quot;exact&quot; })
+    .order(&quot;created_at&quot;, { ascending: false })
+    .range(0, 4);
+
+<span class="ok">{ rows: 5, total: 39 }</span>  ← page 1
+
+.range(5, 9);
+<span class="ok">{ rows: 5, total: 39, first_id: &quot;8f0bd12f&quot; }</span>  ← page 2 (offset 동작 ✓)</code></pre>
+
+    <h3>2. 3 endpoint 응답 정합성</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>endpoint</th><th>rows</th><th>total</th><th>검증</th></tr></thead>
+        <tbody>
+          <tr><td>reservations · range(0,4)</td><td>5</td><td>39</td><td><span class="badge badge-pass">PASS</span></td></tr>
+          <tr><td>reservations · range(5,9)</td><td>5</td><td>39</td><td><span class="badge badge-pass">PASS</span></td></tr>
+          <tr><td>customers · range(0,49)</td><td>14</td><td>14</td><td><span class="badge badge-pass">PASS</span></td></tr>
+          <tr><td>settlement_periods · range(0,49)</td><td>2</td><td>2</td><td><span class="badge badge-pass">PASS</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>3. <code>parsePagination()</code> 헬퍼 단위 테스트 (6 case)</h3>
+    <pre><code>?                          → { limit: <span class="ok">50</span>, offset: <span class="ok">0</span> }     ← 기본값
+?limit=25&amp;offset=100       → { limit: <span class="ok">25</span>, offset: <span class="ok">100</span> }   ← 유효값
+?limit=300                 → { limit: <span class="ok">200</span>, offset: 0 }   ← MAX 클램프
+?limit=0                   → { limit: <span class="ok">1</span>, offset: 0 }     ← 하한 클램프
+?offset=-50                → { limit: 50, offset: <span class="ok">0</span> }     ← 음수 → 0
+?limit=abc&amp;offset=xyz      → { limit: <span class="ok">50</span>, offset: <span class="ok">0</span> }     ← 비숫자 fallback</code></pre>
+
+    <h3>4. CI 단위 테스트</h3>
+    <p><code>npm test</code> 248 tests PASS (parsePagination +7 cases). 머지 후에도 매 PR 마다 자동 검증.</p>
+  </section>
+
+  <section>
+    <h2>B5 · EditableBlock wrap <span class="verdict">PASS</span></h2>
+
+    <h3>1. 6 customer 페이지 production HTML 카피 노출</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>경로</th><th>HTTP</th><th>핵심 카피</th></tr></thead>
+        <tbody>
+          <tr><td><code>/</code></td><td>200</td><td>"전용 주차 공간" ✓</td></tr>
+          <tr><td><code>/guide</code></td><td>200</td><td>"입/출차 안내" ✓</td></tr>
+          <tr><td><code>/privacy</code></td><td>200</td><td>"개인정보처리방침" ✓</td></tr>
+          <tr><td><code>/terms</code></td><td>200</td><td>"서비스 이용약관" ✓</td></tr>
+          <tr><td><code>/my-reservation</code></td><td>200</td><td>"예약 조회" ✓</td></tr>
+          <tr><td><code>/lot/{bmw}</code></td><td>200</td><td>"전용주차장" ✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>2. edit_mode 보안 — token 없이 차단</h3>
+    <pre><code># default 진입
+$ curl https://parking24.me/  | grep -c &quot;contenteditable&quot;
+<span class="ok">0</span>   ← no-op 정상
+
+# ?edit_mode=1 only (no token)
+$ curl &quot;https://parking24.me/?edit_mode=1&quot; | grep -c &quot;contenteditable&quot;
+<span class="ok">0</span>   ← middleware 차단 ✓
+
+# ?edit_mode=1&amp;edit_token=invalid_dummy
+$ curl &quot;...edit_token=invalid_dummy&quot; | grep -c &quot;contenteditable&quot;
+<span class="ok">0</span>   ← HMAC verify 차단 ✓</code></pre>
+
+    <h3>3. wrap 통계 (코드 기준)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>파일</th><th>wrap 개수</th></tr></thead>
+        <tbody>
+          <tr><td><code>page.tsx</code> (home)</td><td>1</td></tr>
+          <tr><td><code>privacy/page.tsx</code></td><td>3</td></tr>
+          <tr><td><code>terms/page.tsx</code></td><td>3</td></tr>
+          <tr><td><code>guide/page.tsx</code></td><td>4</td></tr>
+          <tr><td><code>lot/[id]/page.tsx</code></td><td>5</td></tr>
+          <tr><td><code>complete/page.tsx</code> (기존 demo)</td><td>8</td></tr>
+          <tr><td><code>booking/BookingClient.tsx</code></td><td>3</td></tr>
+          <tr><td><code>search/SearchClient.tsx</code></td><td>1</td></tr>
+          <tr><td><code>my-reservation/MyReservationClient.tsx</code></td><td>3</td></tr>
+          <tr><td><strong>합계 (9 파일)</strong></td><td><strong>31</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>📋 종합 검증 결과</h2>
+
+    <div class="check-row">
+      <div class="icon">✓</div>
+      <div class="body">
+        <strong>B8 — /admin/login title + meta + 보안 헤더</strong>
+        <p>production 라이브 확인. <code>&lt;title&gt;관리자 로그인 | PARKING 24&lt;/title&gt;</code>, robots noindex, /admin 307 차단.</p>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <div class="icon">✓</div>
+      <div class="body">
+        <strong>A2 — Migration 031 인덱스 3개</strong>
+        <p>Supabase Management API <code>pg_indexes</code> 조회로 3개 생성 확인. <code>SET enable_seqscan=off</code> 강제 시 <code>Index Scan</code> 적중 검증. 데이터 누적 시 자동 사용.</p>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <div class="icon">✓</div>
+      <div class="body">
+        <strong>A1 — Pagination range/count + parsePagination</strong>
+        <p>supabase-js admin 으로 3 endpoint <code>range</code>/<code>count: exact</code> 응답 검증. <code>parsePagination</code> 6 case PASS (basic / valid / clamp max / clamp min / negative / nan).</p>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <div class="icon">✓</div>
+      <div class="body">
+        <strong>B5 — EditableBlock wrap + edit_mode 보안</strong>
+        <p>6 customer 페이지 HTTP 200 + 카피 노출. edit_mode token 없이는 contenteditable 미출현 (middleware HMAC 차단 정상). 9 파일 31 wrap.</p>
+      </div>
+    </div>
+
+    <h3>⏭ 잔여 사용자 권장 사항 (1건)</h3>
+    <div class="check-row">
+      <div class="icon warn">!</div>
+      <div class="body">
+        <strong>관리자 UI end-to-end 체험 (선택)</strong>
+        <p>SUPER_ADMIN 로그인 후: ① <code>/admin/reservations</code>·<code>/admin/customers</code>·<code>/admin/settlements</code> 페이지네이션 클릭 동작 ② <code>/admin/theme?section=content</code> iframe 인라인 편집 클릭 + 저장 동작. 자동 검증으로는 인증 상태가 필요해 확인 못 함.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>🛠️ 검증 방법</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>검증 축</th><th>도구</th><th>대상</th></tr></thead>
+        <tbody>
+          <tr><td>Production HTML</td><td><code>curl</code></td><td>title / meta / 카피 노출 / contenteditable</td></tr>
+          <tr><td>DB 스키마 / 쿼리</td><td>Supabase Management API <code>/database/query</code></td><td>pg_indexes, EXPLAIN ANALYZE</td></tr>
+          <tr><td>API 응답 shape</td><td>supabase-js admin (service_role)</td><td>range, count, offset, meta</td></tr>
+          <tr><td>응답 헤더</td><td><code>curl -I</code></td><td>cache-control / CSP / HSTS / x-frame</td></tr>
+          <tr><td>정적 코드 / 카운트</td><td><code>grep -c</code></td><td>EditableBlock wrap 횟수, import 정합성</td></tr>
+          <tr><td>유닛 테스트</td><td><code>npm test</code> (Vitest)</td><td>parsePagination 6 case, 전체 248 tests</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>Sprint 1 QA · 4/4 PASS · 2026-05-15</div>
+  <div style="margin-top: 8px;">© 2026 PARKING 24 — <a href="parking24-sprint1-report.html">Sprint 1 결과</a> · <a href="parking24-admin-improvements.html">로드맵</a></div>
+</footer>
+</body>
+</html>
