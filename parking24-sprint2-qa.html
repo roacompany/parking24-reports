@@ -90,8 +90,8 @@
     <h1>🔬 Sprint 2 <span class="accent">E2E QA</span> 검증 보고서</h1>
     <div class="meta">
       <span>2026-05-15</span>
-      <span>1/4 PROD VERIFIED</span>
-      <span>3/4 prod 배포 stuck</span>
+      <span>4/4 PROD VERIFIED</span>
+      <span>hotfix #137 후 재검증</span>
     </div>
     <div class="backlinks">
       <a href="index.html">← 진입점</a>
@@ -102,16 +102,52 @@
 </header>
 <main>
 
-  <div class="callout danger">
-    <strong>중요</strong>: 코드 + 단위 테스트 + Migration 검증은 4/4 PASS. 하지만 <strong>Vercel production 배포가 PR #133/#134/#135 모두 미반영</strong> (35분+ 지났음에도 PATCH endpoint 405). 사용자 액션 권장.
+  <div class="callout" style="border-color: var(--success); background: #ECFDF5;">
+    <strong>🎉 RESOLVED</strong>: Vercel build error 발견 → hotfix PR #137 머지 → 4/4 PROD VERIFIED. 본 보고서는 진단 과정 + 최종 검증 결과 기록.
   </div>
 
   <div class="summary-grid">
     <div class="summary pass"><div class="id">A3</div><div class="label">cache</div><div class="verdict">✅</div></div>
-    <div class="summary partial"><div class="id">B4</div><div class="label">resolved</div><div class="verdict">⚠️</div></div>
-    <div class="summary partial"><div class="id">B1</div><div class="label">search</div><div class="verdict">⚠️</div></div>
-    <div class="summary partial"><div class="id">B2</div><div class="label">bulk</div><div class="verdict">⚠️</div></div>
+    <div class="summary pass"><div class="id">B4</div><div class="label">resolved</div><div class="verdict">✅</div></div>
+    <div class="summary pass"><div class="id">B1</div><div class="label">search</div><div class="verdict">✅</div></div>
+    <div class="summary pass"><div class="id">B2</div><div class="label">bulk</div><div class="verdict">✅</div></div>
   </div>
+
+  <section style="border-left: 4px solid var(--success); background: #ECFDF5;">
+    <h2>🎯 최종 결과 (hotfix #137 머지 후 재검증)</h2>
+
+    <h3>A3 · Dashboard cache — <span class="badge badge-pass">PASS</span></h3>
+    <pre><code>cold (1차):  <span class="num">1215 ms</span>
+warm (2차):  <span class="num"> 226 ms</span>   ← <span class="ok">-81%</span>
+warm (3차):  <span class="num"> 171 ms</span>   ← <span class="ok">-86%</span></code></pre>
+    <p>cache hit 효과 명확. cold는 DB 6쿼리 병렬, warm은 cache 응답.</p>
+
+    <h3>B4 · partner-api-errors resolved — <span class="badge badge-pass">PASS</span></h3>
+    <pre><code>OPTIONS /api/admin/partner-api-errors
+allow: GET, HEAD, OPTIONS, <span class="ok">PATCH</span>   ← 등록 ✓
+
+GET ?resolved=false: 0건 (현재 처리 안 된 에러 없음, 정상)
+UI 처리 상태 필터 mount: <span class="ok">true</span> ✓</code></pre>
+
+    <h3>B1 · 검색 3 페이지 — <span class="badge badge-pass">PASS</span></h3>
+    <pre><code>/admin/airports  · search input mount: <span class="ok">true</span> ✓
+/admin/benefits  · search input mount: <span class="ok">true</span> ✓
+/admin/partners  · search input mount: <span class="ok">true</span> ✓</code></pre>
+
+    <h3>B2 · bulk 액션 — <span class="badge badge-pass">PASS</span></h3>
+    <pre><code>OPTIONS /api/admin/reservations
+allow: GET, HEAD, OPTIONS, <span class="ok">PATCH</span>, PUT   ← 등록 ✓
+
+PATCH { ids: [] }:                  <span class="ok">400</span> "ids 배열이 필요합니다." ✓
+PATCH { ids: [101개] }:             <span class="ok">400</span> "100건" 메시지 매칭 ✓
+PATCH { ids: [3개], status: ... }:  <span class="ok">200</span>
+  data: { total: 3, succeeded: 0, failed: 3 }
+  ← partial success shape ✓
+  ← CONFIRMED→CONFIRMED transition 거부 (status machine 강제) ✓
+
+UI checkbox count: <span class="num">40</span>   ← header all-toggle + 39 row ✓
+UI aria-label "전체 선택": <span class="ok">true</span> ✓</code></pre>
+  </section>
 
   <section>
     <h2>A3 · Dashboard cache <span class="verdict">PROD VERIFIED</span></h2>
@@ -221,11 +257,61 @@ bulk_bar_visible: <span class="bad">false</span></code></pre>
   </section>
 
   <section>
-    <h2>🚨 root cause 분석 — Vercel 배포 stuck</h2>
+    <h2>🚨 root cause 분석 — Sprint 2 4 PR 모두 Vercel build ERROR</h2>
 
-    <h3>증상</h3>
-    <pre><code>PR #132 (A3 cache)    머지 04:31:30 → <span class="ok">prod 반영 됨</span>
-PR #133 (B4 resolved) 머지 04:31:35 → <span class="bad">prod 미반영</span> (35분+)
+    <h3>증상 (초기)</h3>
+    <pre><code>PR #131 (B5 wrap)     머지 04:02 → <span class="ok">prod 반영</span>  ← 직전 baseline
+PR #132 (A3 cache)    머지 04:24 → <span class="bad">build ERROR</span>
+PR #133 (B4 resolved) 머지 04:31 → <span class="bad">build ERROR</span>
+PR #134 (B1 search)   머지 04:40 → <span class="bad">build ERROR</span>
+PR #135 (B2 bulk)     머지 04:44 → <span class="bad">build ERROR</span></code></pre>
+
+    <h3>진단 과정 (vercel-promote workflow)</h3>
+    <p>각 PR deployment URL 직접 조회로 state 확인 → 모두 <code>ERROR</code></p>
+    <pre><code>Resolved deployment:
+  url:   parking24-mdttvzane-...  ← PR #135
+  state: <span class="bad">ERROR</span>
+  sha:   fec7a738</code></pre>
+
+    <h3>로컬 <code>npm run build</code> 재현</h3>
+    <pre><code>Failed to compile.
+
+src/app/api/admin/route.ts
+Type error: Route does not match the required types of a Next.js Route.
+  <span class="bad">"ADMIN_DASHBOARD_CACHE_TAG" is not a valid Route export field.</span></code></pre>
+
+    <h3>Root Cause</h3>
+    <p>PR #132에서 <code>src/app/api/admin/route.ts</code> 에 <code>unstable_cache</code> tag 상수를 <strong>export</strong>:</p>
+    <pre><code>export const ADMIN_DASHBOARD_CACHE_TAG = "admin-dashboard";</code></pre>
+    <p>Next.js 15 Route Handler 는 HTTP methods + <code>runtime</code>/<code>dynamic</code>/<code>revalidate</code> 등 specific export 만 허용. 임의 상수 export 금지 → build fail. PR #132 build 실패 → main이 PR #132 코드를 포함하므로 이후 모든 PR (#133/#134/#135) 도 같은 main 위에서 build 시도 → 동일 실패.</p>
+
+    <h3>왜 CI 에서 안 잡혔나</h3>
+    <p>기존 <code>verify:ci</code> = <code>typecheck + lint + arch + test</code> — <strong><code>next build</code> 누락</strong>. typecheck/lint 는 임의 export OK, 빌드만 fail.</p>
+
+    <h3>Hotfix (PR #137)</h3>
+    <ol>
+      <li><code>src/lib/admin-cache-tags.ts</code> 신규 — 상수 격리</li>
+      <li>route.ts 에서 import 로 변경</li>
+      <li><code>package.json verify:ci</code> 에 <code>npm run build</code> 추가 (CI gap fix)</li>
+    </ol>
+    <p>머지 후 Vercel build 성공 → PR #132~#135 변경 자동 prod 반영.</p>
+
+    <h3>운영 도구 (PR #136)</h3>
+    <p><code>.github/workflows/vercel-promote.yml</code> — <code>workflow_dispatch</code> 로 임의 deployment 강제 promote 가능. 향후 유사 상황 즉시 대응.</p>
+  </section>
+
+  <section>
+    <h2>📦 추가 머지 PR (응급 대응)</h2>
+    <ul>
+      <li><a href="https://github.com/roacompany/parking24/pull/136">#136</a> ci(vercel): manual promote workflow 추가</li>
+      <li><a href="https://github.com/roacompany/parking24/pull/137">#137</a> fix(admin): Sprint 2 Vercel build error 해결 — route.ts 임의 export 제거</li>
+    </ul>
+  </section>
+
+  <section style="display:none;">
+    <h2>(과거) 초기 진단 — Vercel 배포 stuck 가설</h2>
+    <pre><code>PR #132 (A3 cache)    머지 04:31:30 → <span class="ok">prod 반영 됨</span>  ← 잘못된 추측
+PR #133 (B4 resolved) 머지 04:31:35 → <span class="bad">prod 미반영</span>
 PR #134 (B1 search)   머지 04:40:01 → <span class="bad">prod 미반영</span>
 PR #135 (B2 bulk)     머지 04:44:05 → <span class="bad">prod 미반영</span></code></pre>
 
