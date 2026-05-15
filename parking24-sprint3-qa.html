@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>parking24 Sprint 3 QA 검증 보고서</title>
+<style>
+  :root {
+    --primary: #FF6B35; --primary-dark: #E55A28;
+    --bg: #F4F5F7; --card: #FFFFFF;
+    --text: #1A1A1A; --text-muted: #6B7280; --border: #E5E7EB;
+    --success: #10B981; --warning: #F59E0B; --danger: #DC2626; --info: #3B82F6;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin:0; font-family: -apple-system,BlinkMacSystemFont,"SF Pro","Pretendard","Apple SD Gothic Neo",sans-serif; background:var(--bg); color:var(--text); line-height:1.6; font-size:15px; }
+  header { background: linear-gradient(135deg, #1E40AF 0%, #3730A3 100%); color:#fff; padding:32px 20px 28px; border-bottom: 4px solid var(--info); }
+  header .container { max-width:820px; margin:0 auto; }
+  header h1 { margin:0 0 8px; font-size:24px; font-weight:900; letter-spacing:-0.02em; }
+  header h1 .accent { color:#93C5FD; }
+  header .meta { font-size:13px; color:#C7D2FE; display:flex; gap:12px; flex-wrap:wrap; }
+  header .meta span::before { content:"·"; margin-right:12px; color:#818CF8; }
+  header .meta span:first-child::before { content:""; margin:0; }
+  header .backlinks { margin-top:10px; font-size:13px; }
+  header .backlinks a { color:#93C5FD; text-decoration:none; margin-right:14px; }
+  main { max-width:820px; margin:0 auto; padding:20px 16px 48px; }
+  .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0; }
+  @media (min-width:600px) { .summary-grid { grid-template-columns:repeat(4,1fr); } }
+  .summary { background:var(--card); border-radius:10px; padding:16px; border:1px solid var(--border); text-align:center; }
+  .summary.pass { border-color:var(--success); background:#ECFDF5; }
+  .summary .id { font-size:11px; color:var(--text-muted); font-weight:700; letter-spacing:0.05em; }
+  .summary .label { font-size:13px; font-weight:700; margin:4px 0; }
+  .summary .verdict { font-size:20px; font-weight:900; color:var(--success); }
+  section { background:var(--card); border-radius:12px; padding:20px; margin:16px 0; border:1px solid var(--border); }
+  section h2 { font-size:18px; margin:0 0 14px; font-weight:800; letter-spacing:-0.01em; display:flex; align-items:center; gap:10px; }
+  section h2 .verdict { background:var(--success); color:#fff; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:700; }
+  section h3 { font-size:14px; margin:16px 0 6px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; }
+  p { margin:8px 0; }
+  ul, ol { padding-left:22px; }
+  li { margin:4px 0; }
+  code, pre { font-family:"SF Mono",Menlo,Consolas,monospace; font-size:13px; }
+  code { background:#F3F4F6; padding:2px 6px; border-radius:4px; word-break:break-all; }
+  pre { background:#0F172A; color:#E2E8F0; padding:14px; border-radius:8px; overflow-x:auto; margin:12px 0; font-size:12px; line-height:1.55; white-space:pre; }
+  pre .ok { color:#86EFAC; } pre .num { color:#FCD34D; } pre .bad { color:#FCA5A5; }
+  pre code { background:transparent; padding:0; color:inherit; }
+  .table-wrap { overflow-x:auto; margin:10px 0; -webkit-overflow-scrolling:touch; }
+  table { width:100%; border-collapse:collapse; font-size:13px; min-width:500px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { background:#F9FAFB; font-weight:700; color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:0.03em; }
+  tbody tr:last-child td { border-bottom:none; }
+  .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:0.02em; }
+  .badge-pass { background:#D1FAE5; color:#065F46; }
+  .badge-warn { background:#FEF3C7; color:#92400E; }
+  .callout { border-left:4px solid var(--success); background:#ECFDF5; padding:12px 14px; border-radius:0 8px 8px 0; margin:12px 0; font-size:14px; }
+  footer { text-align:center; color:var(--text-muted); font-size:12px; padding:32px 16px; border-top:1px solid var(--border); margin-top:32px; }
+  a { color:var(--primary-dark); }
+  @media (min-width:600px) { body { font-size:15.5px; } header h1 { font-size:28px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>🔬 Sprint 3 <span class="accent">E2E QA</span> 검증 보고서</h1>
+    <div class="meta">
+      <span>2026-05-15</span>
+      <span>3/3 PROD VERIFIED</span>
+      <span>hotfix #142 후 완전 검증</span>
+    </div>
+    <div class="backlinks">
+      <a href="index.html">← 진입점</a>
+      <a href="parking24-sprint3-report.html">↩ Sprint 3 결과</a>
+      <a href="parking24-admin-improvements.html">→ 전체 로드맵</a>
+    </div>
+  </div>
+</header>
+<main>
+
+  <div class="callout">
+    <strong>🎉 4/4 PROD VERIFIED</strong>. 진행 중 발견된 audit-logs GET 403 (B7-2)는 hotfix #142 머지로 해결.
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary pass"><div class="id">B3</div><div class="label">CSV</div><div class="verdict">✅</div></div>
+    <div class="summary pass"><div class="id">C1</div><div class="label">admin_users</div><div class="verdict">✅</div></div>
+    <div class="summary pass"><div class="id">B7-1</div><div class="label">infra</div><div class="verdict">✅</div></div>
+    <div class="summary pass"><div class="id">B7-2</div><div class="label">UI+통합</div><div class="verdict">✅</div></div>
+  </div>
+
+  <section>
+    <h2>B3 · CSV export <span class="verdict">PASS</span></h2>
+    <pre><code>GET /api/admin/customers/csv
+status:           <span class="num">200</span>
+content-type:     text/csv; charset=utf-8
+content-disposition: attachment; filename=<span class="ok">customers_20260515.csv</span>
+
+GET /api/admin/settlements/csv
+status: <span class="num">200</span>, content-type: text/csv; charset=utf-8
+
+UI "CSV" 버튼:
+  /admin/customers   : <span class="ok">true</span>
+  /admin/settlements : <span class="ok">true</span></code></pre>
+  </section>
+
+  <section>
+    <h2>C1 · admin_users 보안 컬럼 <span class="verdict">PASS</span></h2>
+    <h3>1. Migration 033 prod 컬럼</h3>
+    <pre><code>SELECT id, last_login_at, login_count FROM admin_users WHERE id=<temp>;
+
+has_last_login_at: <span class="ok">true</span>
+login_count: <span class="num">1</span>   ← 초기 로그인 1회</code></pre>
+
+    <h3>2. 1h throttle 자동 갱신 동작</h3>
+    <pre><code># /api/admin GET 호출 후
+after_login_count:    <span class="num">1</span>   ← 1h 이내 재호출이라 throttle skip (정상)
+after_last_login_at:  <span class="ok">"2026-05-15T06:45:07.304+00:00"</span>   ← 갱신됨</code></pre>
+
+    <h3>3. UI /admin/users</h3>
+    <ul>
+      <li>"최근 로그인" 컬럼 mount ✓</li>
+      <li>"로그인 횟수" 컬럼 mount ✓</li>
+      <li>30일+ 미접속 orange 강조 (코드 검증, 데이터 없음)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>B7-1 · admin_action_logs 인프라 <span class="verdict">PASS</span></h2>
+    <pre><code>SELECT table_name FROM information_schema.tables WHERE table_name='admin_action_logs';
+→ <span class="ok">"admin_action_logs"</span> ✓
+
+logger 헬퍼: src/lib/admin-action-logger.ts
+- IP/UA 자동 추출 (x-forwarded-for / x-real-ip)
+- impersonation 감지 (middleware x-impersonating-admin-id)
+- fail-open: INSERT 실패해도 mutation 막지 않음</code></pre>
+  </section>
+
+  <section>
+    <h2>B7-2 · audit-logs UI + mutation 통합 <span class="verdict">PASS (hotfix #142 후)</span></h2>
+    <h3>1. GET /api/admin/audit-logs</h3>
+    <pre><code>SUPER_ADMIN cookie 로 호출:
+status: <span class="num">200</span>
+success: <span class="ok">true</span>
+rows: 0   ← 초기 비어있음 (정상)
+has_meta: <span class="ok">true</span>   ← Pagination meta 응답 ✓</code></pre>
+
+    <h3>2. Logger smoke — airport UPDATE → audit-logs +1</h3>
+    <pre><code># 1) 변경 전 count
+GET /api/admin/audit-logs?resource_type=airport
+before: <span class="num">0</span> rows
+
+# 2) airport UPDATE
+PUT /api/admin/airports { id, sort_order } → 200
+
+# 3) 변경 후 count (3초 wait)
+GET /api/admin/audit-logs?resource_type=airport
+after: <span class="num">1</span> rows
+delta: <span class="ok">+1</span> ✓
+first_action: <span class="ok">"UPDATE_AIRPORT"</span> ✓</code></pre>
+
+    <h3>3. UI /admin/audit-logs</h3>
+    <ul>
+      <li>h1 "감사 로그" mount ✓</li>
+      <li>리소스 필터 mount ✓</li>
+      <li>기간 필터 mount ✓</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>🚨 진행 중 발견 + 해결</h2>
+
+    <h3>B7-2 audit-logs GET → 403</h3>
+    <pre><code># PR #141 머지 후 E2E 1차 실행 결과
+GET /api/admin/audit-logs?since=24h&limit=10
+status: <span class="bad">403</span>   ← SUPER_ADMIN 인데도 fail</code></pre>
+
+    <h3>Root cause</h3>
+    <p><code>requireApiAuth('audit-logs', 'read')</code> 가 <code>hasPermission</code> 호출. <code>hasPermission</code> 은 <code>ADMIN_PERMISSIONS[resource]</code> 조회 → 'audit-logs' 키가 map 에 없어 <code>undefined</code> → fail → 403.</p>
+
+    <h3>Hotfix #142</h3>
+    <p><code>src/lib/constants.ts</code> <code>ADMIN_PERMISSIONS</code> 에 'audit-logs' 키 추가:</p>
+    <pre><code>"audit-logs": { SUPER_ADMIN: "read", LOT_ADMIN: "none", PARTNER_ADMIN: "none", PARTNER_SUPER_ADMIN: "none" }</code></pre>
+    <p>middleware ACL 과 동일 정책. 머지 + Vercel 배포 후 재검증 통과.</p>
+
+    <h3>학습</h3>
+    <p>새 admin endpoint 추가 시 <strong>middleware PERMISSIONS map + ADMIN_PERMISSIONS map 양쪽 모두</strong> 추가 필요. 향후 lint/test로 drift 자동 검출 검토.</p>
+  </section>
+
+  <section>
+    <h2>📋 종합 결과 4/4 PASS</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>항목</th><th>코드</th><th>Migration</th><th>UI</th><th>API endpoint</th></tr></thead>
+        <tbody>
+          <tr><td>B3 CSV</td><td><span class="badge badge-pass">PASS</span></td><td>—</td><td>버튼 mount</td><td>200 CSV download</td></tr>
+          <tr><td>C1 admin_users</td><td><span class="badge badge-pass">PASS</span></td><td><span class="badge badge-pass">033 prod</span></td><td>컬럼 mount</td><td>throttle 갱신 ✓</td></tr>
+          <tr><td>B7-1 infra</td><td><span class="badge badge-pass">PASS</span></td><td><span class="badge badge-pass">034 prod</span></td><td>—</td><td>logger 헬퍼 ready</td></tr>
+          <tr><td>B7-2 UI+통합</td><td><span class="badge badge-pass">PASS</span></td><td>—</td><td>3 페이지 mount</td><td>GET 200 / logger +1 delta</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>🛠️ 검증 방법</h2>
+    <ul>
+      <li>임시 SUPER_ADMIN 자동 생성 + cleanup (Sprint 1/2 패턴)</li>
+      <li>headless browser (gstack/browse) 인증 cookie 추출</li>
+      <li>API endpoint fetch + supabase-js admin 으로 cross-check</li>
+      <li>logger smoke: 실 mutation 호출 → audit-logs row 증가 검증</li>
+      <li>verify:ci 에 next build 포함 (Sprint 2 후속 #137)</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <div>Sprint 3 E2E QA · 4/4 PROD VERIFIED · 2026-05-15</div>
+  <div style="margin-top:8px;">© 2026 PARKING 24 — <a href="parking24-sprint3-report.html">Sprint 3 결과</a> · <a href="parking24-admin-improvements.html">로드맵</a></div>
+</footer>
+</body>
+</html>
