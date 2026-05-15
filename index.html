@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>parking24 분석 보고서</title>
+<style>
+  :root {
+    --primary: #FF6B35;
+    --primary-dark: #E55A28;
+    --bg: #F4F5F7;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Pretendard", "Apple SD Gothic Neo", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  header {
+    background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
+    color: #fff;
+    padding: 40px 20px;
+    border-bottom: 4px solid var(--primary);
+    text-align: center;
+  }
+  header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  header h1 .accent { color: var(--primary); }
+  header p { margin: 0; font-size: 14px; color: #9CA3AF; }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 22px;
+    margin: 14px 0;
+    border: 1px solid var(--border);
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card:active {
+    transform: scale(0.98);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .card .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+  .card.analysis .tag { background: #DBEAFE; color: #1E40AF; }
+  .card.roadmap .tag { background: #FEF3C7; color: #92400E; }
+  .card.sprint .tag { background: #D1FAE5; color: #065F46; }
+  .card h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .card p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .card .arrow {
+    float: right;
+    font-size: 18px;
+    color: var(--primary);
+    margin-top: -2px;
+  }
+  footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 32px 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 32px;
+  }
+  footer code {
+    background: #F3F4F6;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🅿️ <span class="accent">parking24</span> 분석 보고서</h1>
+  <p>공항 주차대행 예약 플랫폼 · 2026-05-15</p>
+</header>
+<main>
+  <a href="parking24-analysis.html" class="card analysis">
+    <span class="arrow">→</span>
+    <span class="tag">본사이트 분석</span>
+    <h2>parking24.me 라이브 스냅샷</h2>
+    <p>인프라 · SEO · 콘텐츠 · UX · 파트너 분기 · Partner API · /admin 영역 — 8개 축 라이브 점검</p>
+  </a>
+
+  <a href="parking24-admin-improvements.html" class="card roadmap">
+    <span class="arrow">→</span>
+    <span class="tag">로드맵</span>
+    <h2>/admin 개선 로드맵 (16건)</h2>
+    <p>속도 + 기능 완성도 — P1~P4 우선순위 매트릭스 + 3-Sprint plan</p>
+  </a>
+
+  <a href="parking24-sprint1-report.html" class="card sprint">
+    <span class="arrow">→</span>
+    <span class="tag">Sprint 1 완료</span>
+    <h2>✅ Sprint 1 결과 (4 PR shipped)</h2>
+    <p>B8 login title · A2 Migration 031 · A1 Pagination · B5 EditableBlock — 모두 production 적용</p>
+  </a>
+</main>
+
+<footer>
+  <div>모바일 친화 HTML · GitHub Pages 호스팅</div>
+  <div style="margin-top: 8px;">
+    <code>roacompany/parking24-reports</code>
+  </div>
+</footer>
+</body>
+</html>
