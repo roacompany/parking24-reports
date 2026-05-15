@@ -70,6 +70,11 @@
   .card.sprint .tag { background: #D1FAE5; color: #065F46; }
   .card.sprint2 .tag { background: #BBF7D0; color: #14532D; }
   .card.qa .tag { background: #E0E7FF; color: #3730A3; }
+  .card.overview .tag { background: #FED7AA; color: #9A3412; }
+  .card.overview {
+    background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+    border-left: 4px solid var(--primary);
+  }
   .card h2 {
     margin: 0 0 6px;
     font-size: 18px;
@@ -109,6 +114,13 @@
   <p>공항 주차대행 예약 플랫폼 · 2026-05-15</p>
 </header>
 <main>
+  <a href="parking24-overview.html" class="card overview">
+    <span class="arrow">→</span>
+    <span class="tag">⭐ 종합 (중요도 순서)</span>
+    <h2>📊 16 PR + 4 Migration · 중요도 Top 11</h2>
+    <p>3 Sprint 전체 정리 · CRITICAL/HIGH/MED/LOW · hotfix 4건 · 시스템적 학습 7가지</p>
+  </a>
+
   <a href="parking24-analysis.html" class="card analysis">
     <span class="arrow">→</span>
     <span class="tag">본사이트 분석</span>

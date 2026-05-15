@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>parking24 /admin 종합 보고서 — 중요도 순서</title>
+<style>
+  :root {
+    --primary: #FF6B35;
+    --primary-dark: #E55A28;
+    --bg: #F4F5F7;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #DC2626;
+    --info: #3B82F6;
+    --critical: #B91C1C;
+    --high: #EA580C;
+    --med: #CA8A04;
+    --low: #16A34A;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Pretendard", "Apple SD Gothic Neo", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  header {
+    background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
+    color: #fff;
+    padding: 36px 20px 32px;
+    border-bottom: 4px solid var(--primary);
+  }
+  header .container { max-width: 820px; margin: 0 auto; }
+  header h1 {
+    margin: 0 0 10px;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  header h1 .accent { color: var(--primary); }
+  header .subtitle {
+    font-size: 14px;
+    color: #D1D5DB;
+    margin-bottom: 14px;
+  }
+  header .meta { font-size: 13px; color: #9CA3AF; display: flex; gap: 12px; flex-wrap: wrap; }
+  header .meta span::before { content: "·"; margin-right: 12px; color: #6B7280; }
+  header .meta span:first-child::before { content: ""; margin: 0; }
+  header .backlinks { margin-top: 12px; font-size: 13px; }
+  header .backlinks a { color: var(--primary); text-decoration: none; margin-right: 14px; }
+  main { max-width: 820px; margin: 0 auto; padding: 20px 16px 48px; }
+
+  /* TOC */
+  .toc {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 20px 0 24px;
+    border: 1px solid var(--border);
+  }
+  .toc h2 {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .toc ol { margin: 0; padding-left: 22px; font-size: 14px; }
+  .toc ol li { margin: 4px 0; }
+  .toc a { color: var(--text); text-decoration: none; }
+
+  /* hero stats */
+  .hero-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  @media (min-width: 600px) { .hero-stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat .num { font-size: 28px; font-weight: 900; color: var(--primary); letter-spacing: -0.02em; }
+  .stat .label { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  section {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 22px;
+    margin: 18px 0;
+    border: 1px solid var(--border);
+  }
+  section h2 {
+    font-size: 19px;
+    margin: 0 0 16px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section h3 {
+    font-size: 15px;
+    margin: 18px 0 8px;
+    font-weight: 700;
+  }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 5px 0; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  code { background: #F3F4F6; padding: 2px 6px; border-radius: 4px; word-break: break-all; }
+  pre { background: #1E1E1E; color: #E5E7EB; padding: 14px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 12.5px; line-height: 1.55; white-space: pre; }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  .table-wrap { overflow-x: auto; margin: 10px 0; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: #F9FAFB; font-weight: 700; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* Ranked items */
+  .rank-item {
+    display: flex;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rank-item:last-child { border-bottom: none; }
+  .rank-num {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    color: #fff;
+  }
+  .rank-num.critical { background: var(--critical); }
+  .rank-num.high { background: var(--high); }
+  .rank-num.med { background: var(--med); }
+  .rank-num.low { background: var(--low); }
+  .rank-body { flex: 1; min-width: 0; }
+  .rank-body h4 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+  .rank-body .impact {
+    font-size: 13.5px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .rank-body .meta-row {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .rank-body .meta-row code { font-size: 11.5px; }
+  .rank-body .why {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    background: #F9FAFB;
+    border-left: 3px solid var(--text-muted);
+    padding: 8px 10px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 6px;
+  }
+
+  /* Badges */
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+  .badge-pr { background: #ECFDF5; color: #065F46; font-family: monospace; }
+  .badge-mig { background: #FEF3C7; color: #92400E; }
+  .badge-sprint { background: #DBEAFE; color: #1E40AF; }
+  .badge-hotfix { background: #FEE2E2; color: #991B1B; }
+  .badge-pass { background: #D1FAE5; color: #065F46; }
+
+  /* Callout */
+  .callout {
+    border-left: 4px solid var(--primary);
+    background: #FFF7ED;
+    padding: 14px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .callout.success { border-color: var(--success); background: #ECFDF5; }
+  .callout.warn { border-color: var(--warning); background: #FFFBEB; }
+  .callout.info { border-color: var(--info); background: #EFF6FF; }
+
+  /* Learning card */
+  .learning {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    border-left: 4px solid var(--info);
+    padding: 14px 16px;
+    border-radius: 0 10px 10px 0;
+    margin: 10px 0;
+  }
+  .learning h4 { margin: 0 0 6px; font-size: 14.5px; font-weight: 700; color: #1E40AF; }
+  .learning p { margin: 0; font-size: 13.5px; }
+
+  footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 32px 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 32px;
+  }
+  a { color: var(--primary-dark); }
+  @media (min-width: 600px) {
+    body { font-size: 15.5px; }
+    header h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>🅿️ <span class="accent">parking24</span> /admin 종합 보고서</h1>
+    <div class="subtitle">중요도 순서로 정리한 12 PR + 4 hotfix + 4 Migration</div>
+    <div class="meta">
+      <span>2026-05-15</span>
+      <span>3 Sprint 완료</span>
+      <span>모든 변경 PROD VERIFIED</span>
+    </div>
+    <div class="backlinks">
+      <a href="index.html">← 진입점</a>
+      <a href="parking24-admin-improvements.html">로드맵</a>
+      <a href="parking24-sprint1-report.html">Sprint 1</a>
+      <a href="parking24-sprint2-report.html">Sprint 2</a>
+      <a href="parking24-sprint3-report.html">Sprint 3</a>
+    </div>
+  </div>
+</header>
+<main>
+
+  <div class="callout success">
+    <strong>🎯 한 줄 요약</strong>: parking24 본사이트 + /admin 영역 점검 → 16건 개선 로드맵 작성 → 3 Sprint로 12 PR + 4 hotfix shipping → 모든 변경 production 검증 완료. <strong>"광고 trigger 안전선" 확보 + 운영 효율 + 분쟁 대응 인프라까지</strong>.
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat"><div class="num">16</div><div class="label">PR Merged</div></div>
+    <div class="stat"><div class="num">4</div><div class="label">DB Migration</div></div>
+    <div class="stat"><div class="num">~3K</div><div class="label">Lines Added</div></div>
+    <div class="stat"><div class="num">248</div><div class="label">Tests Pass</div></div>
+  </div>
+
+  <div class="toc">
+    <h2>목차</h2>
+    <ol>
+      <li><a href="#executive">Executive Summary</a></li>
+      <li><a href="#top">중요도 Top 11 (CRITICAL / HIGH / MED / LOW)</a></li>
+      <li><a href="#hotfix">발견 + 해결한 시스템적 결함 (4 hotfix)</a></li>
+      <li><a href="#learning">시스템적 학습</a></li>
+      <li><a href="#sprint">Sprint별 회고</a></li>
+      <li><a href="#remain">잔여 + Sprint 4 후보</a></li>
+    </ol>
+  </div>
+
+  <!-- ════════════════════ EXECUTIVE ════════════════════ -->
+  <section id="executive">
+    <h2>📋 Executive Summary</h2>
+
+    <h3>시작 시점 (2026-05-15 아침)</h3>
+    <p>parking24 본사이트(<code>parking24.me</code>) + /admin 영역을 라이브 점검. 인프라·SEO·라우팅·파트너 분기·Partner API는 production-grade이지만 <strong>광고 trigger 직전의 운영 부채 16건</strong> 발견.</p>
+
+    <h3>3 Sprint 진행 결과</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sprint</th><th>주제</th><th>PR</th><th>핵심 효과</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>광고 trigger 안전선</td>
+            <td>4 PR</td>
+            <td>pagination · created_at 인덱스 · login title · EditableBlock</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>운영 효율</td>
+            <td>4 PR + 2 hotfix</td>
+            <td>dashboard cache · errors resolved · 검색 · bulk 100건</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>분쟁 대응 + 감사</td>
+            <td>4 PR + 1 hotfix</td>
+            <td>CSV · last_login · <strong>admin_action_logs</strong> 영구 기록</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>현재 상태</h3>
+    <ul>
+      <li>✅ Sprint 1/2/3 모든 변경 main 머지 + production 적용</li>
+      <li>✅ 4 Migration (031/032/033/034) prod 적용</li>
+      <li>✅ E2E 검증 모두 PASS (cache hit -86% · pagination · logger +1 delta 등)</li>
+      <li>✅ 광고 시작 가능 상태</li>
+    </ul>
+  </section>
+
+  <!-- ════════════════════ TOP 11 BY IMPACT ════════════════════ -->
+  <section id="top">
+    <h2>🏆 중요도 Top 11 (영향력 순)</h2>
+
+    <p>각 항목은 <strong>광고 시작 후 미치는 비즈니스 영향력</strong> 기준 정렬. CRITICAL은 즉시 시스템 안정성 좌우, HIGH는 1-2주 내 발현, MED는 장기 운영 효율, LOW는 보조 개선.</p>
+
+    <!-- CRITICAL -->
+    <div class="rank-item">
+      <div class="rank-num critical">1</div>
+      <div class="rank-body">
+        <h4>A2 · Migration 031 — reservations 인덱스 3개</h4>
+        <div class="impact">
+          광고 후 데이터 누적되면 모든 admin list 응답 시간이 선형 증가 → 인덱스 추가로 <strong>sequential scan → Index Scan</strong> 보장.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#129</span>
+          <span class="badge badge-sprint">Sprint 1</span>
+          <span class="badge badge-mig">Migration 031</span>
+          <span>idx_reservations_created_at · partner_created · airport_created (partial)</span>
+        </div>
+        <div class="why">
+          <strong>왜 CRITICAL?</strong> 현재 39 row 라 planner 가 Seq Scan 선택하지만 <code>enable_seqscan=off</code> 강제 시 Index Scan 적중 검증 완료. 데이터 누적 시 자동 전환되어 즉시 효과 발생. 인덱스 없으면 100만 row 도달 전 응답 시간 초과 가능.
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num critical">2</div>
+      <div class="rank-body">
+        <h4>A1 · Pagination (offset/limit, 50/page)</h4>
+        <div class="impact">
+          기존 hardcoded <code>limit(500)</code> 4곳 제거. 광고 후 51번째 row부터 영영 안 보이는 문제 차단.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#130</span>
+          <span class="badge badge-sprint">Sprint 1</span>
+          <span>customers / reservations / settlements · count: exact · meta</span>
+        </div>
+        <div class="why">
+          <strong>왜 CRITICAL?</strong> Row 누적 = 시간 문제. 페이지네이션 없으면 운영자가 일부 데이터를 보지 못하는 게 아니라 <strong>존재 자체를 모름</strong>. 발견 시점에 이미 매출 누락 가능.
+        </div>
+      </div>
+    </div>
+
+    <!-- HIGH -->
+    <div class="rank-item">
+      <div class="rank-num high">3</div>
+      <div class="rank-body">
+        <h4>B7 · admin_action_logs (감사 로그) 인프라 + UI + 통합</h4>
+        <div class="impact">
+          모든 admin mutation의 <strong>누가·언제·뭐·어디서·어떻게</strong> 영구 기록. before/after JSONB diff. 분쟁 + 보안 사고 + 운영 사고 추적 기반.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#140 + #141 + #142</span>
+          <span class="badge badge-sprint">Sprint 3</span>
+          <span class="badge badge-mig">Migration 034</span>
+          <span>logger 헬퍼 + /admin/audit-logs UI + 5 mutation 통합</span>
+        </div>
+        <div class="why">
+          <strong>왜 HIGH?</strong> 외부 노출(파트너·고객) 증가하면 분쟁 발생 가능성도 함께 증가. 영구 흔적 없으면 "운영자 실수 vs 사용자 주장" 판정 불가. <code>fail-open</code> 패턴이라 mutation 자체엔 영향 없음 (logger 실패해도 작업 통과).
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num high">4</div>
+      <div class="rank-body">
+        <h4>A3 · Dashboard <code>unstable_cache</code> 5분 + revalidateTag</h4>
+        <div class="impact">
+          /admin 대시보드 Promise.all 6쿼리를 5분 cache. SUPER_ADMIN burst 새로고침 시 DB 부하 ↓. cache hit cold 1215ms → warm 171ms (<strong>-86%</strong> 검증).
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#132</span>
+          <span class="badge badge-sprint">Sprint 2</span>
+          <span>예약 변경 시 즉시 invalidate · 역할별 독립 cache</span>
+        </div>
+        <div class="why">
+          <strong>왜 HIGH?</strong> 광고 시작 = 운영자 대시보드 빈번 확인. 5초 단위 새로고침해도 5분간 DB 1회만 hit. Supabase Pro 비용 + connection pool 압박 ↓.
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num high">5</div>
+      <div class="rank-body">
+        <h4>B5 · EditableBlock wrap 8 페이지 (Layer 4 IA)</h4>
+        <div class="impact">
+          customer 8 페이지의 헤딩·라벨·법적 표기 등 31 위치를 PO가 <code>/admin/theme?section=content</code> iframe 인라인 편집. 마케팅 카피 자율 운영.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#131</span>
+          <span class="badge badge-sprint">Sprint 1</span>
+          <span>home · privacy · terms · guide · lot · search · booking · my-reservation</span>
+        </div>
+        <div class="why">
+          <strong>왜 HIGH?</strong> 광고 시작 후 카피 A/B 테스트 + 긴급 수정(법무·CS 대응) 가능. 코드 배포 없이 카피만 바꿔도 즉시 반영. <code>edit_mode</code> HMAC 토큰으로 보안 보존.
+        </div>
+      </div>
+    </div>
+
+    <!-- MED -->
+    <div class="rank-item">
+      <div class="rank-num med">6</div>
+      <div class="rank-body">
+        <h4>B2 · 예약 일괄 상태 변경 (Bulk PATCH)</h4>
+        <div class="impact">
+          100건 단위 상태 변경. 운영자 클릭 1/100. <strong>partial success</strong> 패턴 (실패 row 별 표시).
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#135</span>
+          <span class="badge badge-sprint">Sprint 2</span>
+          <span>confirm modal · prompt 사유 · status machine 강제 · BULK 마킹</span>
+        </div>
+        <div class="why">
+          <strong>왜 MED?</strong> 운영자 매일 사용. 100건 작업 시 단순 시간 절약 외에도 일관성 보장. status machine과 role 검증 자동.
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num med">7</div>
+      <div class="rank-body">
+        <h4>B4 · partner-api-errors resolved 토글 + Migration 032</h4>
+        <div class="impact">
+          webhook 일시 장애로 같은 source N건 쌓일 때 dismiss 가능. SUPER_ADMIN 처리자/시각/메모 영구 기록.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#133</span>
+          <span class="badge badge-sprint">Sprint 2</span>
+          <span class="badge badge-mig">Migration 032</span>
+          <span>미처리 partial index · 처리됨 토글 + 필터</span>
+        </div>
+        <div class="why">
+          <strong>왜 MED?</strong> 외부 제휴사 webhook 운영 핵심 도구. 노이즈 제거로 신규 에러 즉시 식별. <code>partner_api_errors</code> + Sprint 2 PR #133 = 운영 사이클 완성.
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num med">8</div>
+      <div class="rank-body">
+        <h4>B1 · 검색 필터 3 페이지 + ListSearchFilter 공용</h4>
+        <div class="impact">
+          /admin/airports · /admin/benefits · /admin/partners 검색 input + ilike sanitized escape.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#134</span>
+          <span class="badge badge-sprint">Sprint 2</span>
+          <span>공용 컴포넌트 추출 · 향후 확장 용이</span>
+        </div>
+        <div class="why">
+          <strong>왜 MED?</strong> 파트너 N개 추가되면 검색 필수. 운영 빈도 높지만 데이터 적을 때는 직접 찾기 가능 — 데이터 누적 후 가치 증가.
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num med">9</div>
+      <div class="rank-body">
+        <h4>C1 · admin_users 보안 컬럼 + last_login 자동 갱신</h4>
+        <div class="impact">
+          1h throttle <code>last_login_at</code> / <code>login_count</code> 자동 갱신. 미사용 30일+ 계정 orange 강조.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#139</span>
+          <span class="badge badge-sprint">Sprint 3</span>
+          <span class="badge badge-mig">Migration 033</span>
+          <span>password_changed_at + DESC NULLS LAST 인덱스 + 2FA 기반</span>
+        </div>
+        <div class="why">
+          <strong>왜 MED?</strong> 미사용 계정 추적 = 보안 기본기. 비정상 로그인 폭증 감지. 향후 2FA / 비밀번호 회전 정책 기반. 실제 사건 발생 전엔 가치 잠재적.
+        </div>
+      </div>
+    </div>
+
+    <!-- LOW -->
+    <div class="rank-item">
+      <div class="rank-num low">10</div>
+      <div class="rank-body">
+        <h4>B3 · CSV export customers + settlements</h4>
+        <div class="impact">
+          기존 reservations/csv 패턴 확장. 6+11 컬럼 + 검색·필터 그대로 전달. BOM 포함 UTF-8.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#138</span>
+          <span class="badge badge-sprint">Sprint 3</span>
+          <span>회계/CS 작업 보조</span>
+        </div>
+        <div class="why">
+          <strong>왜 LOW?</strong> 회계/CS 작업 시 spreadsheet 분석 가능. 매일 쓰진 않지만 결정적 순간(월말 정산 보고서 등)에 가치.
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num low">11</div>
+      <div class="rank-body">
+        <h4>B8 · /admin/login title 분리</h4>
+        <div class="impact">
+          <code>관리자 로그인 | PARKING 24</code> + noindex/nofollow meta. 브라우저 탭/북마크 구분.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#128</span>
+          <span class="badge badge-sprint">Sprint 1</span>
+          <span>client component 분리 + server metadata export</span>
+        </div>
+        <div class="why">
+          <strong>왜 LOW?</strong> UX 미관 개선. 보안 noindex는 admin layout 이미 적용돼 있어 중복 안전망. 운영 영향 최소이지만 미관 점수 ↑.
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ════════════════════ HOTFIX ════════════════════ -->
+  <section id="hotfix">
+    <h2>🚨 시스템적 결함 발견 + Hotfix (4건)</h2>
+    <p>각 Sprint 진행 중 발견된 결함과 시스템적 학습. 모두 root cause fix.</p>
+
+    <div class="rank-item">
+      <div class="rank-num critical">!</div>
+      <div class="rank-body">
+        <h4>#137 · Next.js 15 Route Handler 임의 export 금지 + verify:ci에 build 추가</h4>
+        <div class="impact">
+          Sprint 2 4 PR(#132/#133/#134/#135) 모두 Vercel build <code>ERROR</code> 상태. PR #132에서 <code>route.ts</code>에 <code>export const ADMIN_DASHBOARD_CACHE_TAG</code> 추가 — Next.js 15 route handler는 HTTP methods + specific config 외 임의 export 금지.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#137</span>
+          <span class="badge badge-hotfix">hotfix</span>
+          <span>상수 별도 파일 분리 + <code>verify:ci</code>에 <code>npm run build</code> 추가</span>
+        </div>
+        <div class="why">
+          <strong>학습</strong>: <code>verify:ci</code>가 typecheck/lint/arch/test만 했고 <code>next build</code> 누락 — CI gap. build에서만 발견되는 type error 다수 존재. 향후 모든 PR에서 build까지 통과해야 PASS.
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num high">!</div>
+      <div class="rank-body">
+        <h4>#136 · Vercel promote workflow (응급 대응 도구)</h4>
+        <div class="impact">
+          Vercel API <code>target=production</code> 으로 만든 deployment 가 <code>parking24.me</code> alias로 자동 promote 안 될 때 수동 promote할 workflow. <code>workflow_dispatch</code> trigger.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#136</span>
+          <span class="badge badge-hotfix">hotfix</span>
+          <span>deployment 상태 조회 + promote API 호출 + propagation 검증 자동</span>
+        </div>
+        <div class="why">
+          <strong>학습</strong>: GitHub Actions <code>Deploy to Vercel</code> workflow는 deployment 생성만 trigger하고 종료 — INITIALIZING 상태에서 alias 자동 변경 안 됨. 향후 stuck 상황에서 <code>gh workflow run vercel-promote.yml</code> 한 줄로 해결.
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num med">!</div>
+      <div class="rank-body">
+        <h4>#142 · ADMIN_PERMISSIONS map drift</h4>
+        <div class="impact">
+          Sprint 3 E2E 중 <code>/api/admin/audit-logs</code> GET → 403 발견. middleware ACL에는 추가했으나 <code>src/lib/constants.ts</code> <code>ADMIN_PERMISSIONS</code> map에 키 누락.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-pr">#142</span>
+          <span class="badge badge-hotfix">hotfix</span>
+          <span>SUPER_ADMIN read 추가</span>
+        </div>
+        <div class="why">
+          <strong>학습</strong>: 새 admin endpoint 추가 시 <strong>middleware PERMISSIONS map + ADMIN_PERMISSIONS map 양쪽</strong> 모두 갱신 필요. 향후 lint/test로 drift 자동 검출 가능 (resource 키가 한쪽만 있으면 fail). 별도 PR 후보.
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num low">!</div>
+      <div class="rank-body">
+        <h4>B5-1 작업 SKIP (Sprint 1 계획 5 PR → 4 PR로 압축)</h4>
+        <div class="impact">
+          booking/my-reservation/search 모두 이미 <code>getMergedPageContentCached</code> 적용 상태 확인 → 작업 불필요 판정 → 5 PR을 4 PR로 압축.
+        </div>
+        <div class="meta-row">
+          <span class="badge badge-sprint">Sprint 1</span>
+          <span>계획 → 검증 단계의 발견</span>
+        </div>
+        <div class="why">
+          <strong>학습</strong>: 계획 단계에서 기존 코드 state 검증 안 하면 중복 작업. <code>grep</code>으로 함수명 패턴(<code>getMergedPageContentCached</code>) 확인 권장 (단순 <code>getPageContent</code> 검색은 부족).
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ LEARNING ════════════════════ -->
+  <section id="learning">
+    <h2>💡 시스템적 학습 (지식 자산)</h2>
+
+    <div class="learning">
+      <h4>1. CI gap은 build 단계에서만 발견되는 type error를 놓침</h4>
+      <p>typecheck + lint + test만으로 부족. <code>next build</code>는 route handler export 검증, server/client boundary 검사 등 추가 가드를 함. <code>verify:ci</code>에 항상 포함 필요.</p>
+    </div>
+
+    <div class="learning">
+      <h4>2. Vercel API <code>target=production</code>은 deployment만, alias는 별개</h4>
+      <p>GitHub Actions workflow가 deployment 생성만 trigger하면 production alias로 자동 promote 안 됨. 향후 deployment build 완료 wait + alias 명시 호출 step 추가 권장.</p>
+    </div>
+
+    <div class="learning">
+      <h4>3. Migration prod 적용 timing — local에 commit 안 된 파일은 detect 못 함</h4>
+      <p><code>supabase db push --linked</code>는 local <code>supabase/migrations/</code> 폴더 scan. stash 상태에선 새 migration 안 detect됨. PR 머지 후 main pull → push 순서 강제.</p>
+    </div>
+
+    <div class="learning">
+      <h4>4. Permissions map 이중 정의 drift</h4>
+      <p>middleware ACL과 <code>ADMIN_PERMISSIONS</code> 별개 정의 — 한쪽만 추가 시 silent fail (403). 향후 단일 source 통합 또는 lint 자동 검출 필요.</p>
+    </div>
+
+    <div class="learning">
+      <h4>5. fail-open 패턴이 mutation 안전성 보장</h4>
+      <p>logger / partner-api-errors 모두 <code>fail-open</code> (INSERT 실패해도 mutation 자체 영향 없음). 감사·observability 인프라 추가 시 default 패턴.</p>
+    </div>
+
+    <div class="learning">
+      <h4>6. E2E 검증은 임시 SUPER_ADMIN 자동 생성 + cleanup 패턴</h4>
+      <p>Sprint 1부터 정착. 매 Sprint마다 신규 endpoint/UI를 실 prod에서 자동 검증. cleanup은 <code>finally</code> 블록 강제 + 잔여 0건 재확인.</p>
+    </div>
+
+    <div class="learning">
+      <h4>7. partial success 패턴 (B2 bulk · B7 logger smoke)</h4>
+      <p>일괄 작업에서 일부 row 실패 시 succeeded[]/failed[{id, error}] 분리 응답. UI는 성공 row만 자동 deselect + 실패 row 사용자 재시도 가능. Sprint 2 B2부터 Sprint 3 logger smoke까지 일관.</p>
+    </div>
+  </section>
+
+  <!-- ════════════════════ SPRINT 회고 ════════════════════ -->
+  <section id="sprint">
+    <h2>📊 Sprint별 회고</h2>
+
+    <h3>Sprint 1 — "광고 trigger 안전선"</h3>
+    <ul>
+      <li><strong>목표</strong>: 광고 시작 전 데이터 누적 시 발생할 즉각적 병목 차단</li>
+      <li><strong>핵심 효과</strong>: pagination · created_at 인덱스 · login title · EditableBlock</li>
+      <li><strong>특이사항</strong>: B5-1 작업 SKIP으로 계획 5 PR → 4 PR 압축. B5-2 단일 PR로 합침.</li>
+      <li><strong>QA</strong>: 4/4 PASS — <a href="parking24-sprint1-qa.html">QA 보고서</a></li>
+    </ul>
+
+    <h3>Sprint 2 — "운영 효율"</h3>
+    <ul>
+      <li><strong>목표</strong>: Sprint 1 위에 운영 효율 layer (cache · 검색 · bulk)</li>
+      <li><strong>핵심 효과</strong>: dashboard cache -86% · errors resolved · 검색 3 페이지 · bulk 100건</li>
+      <li><strong>특이사항</strong>: 진행 중 <strong>Vercel build error 발견</strong> — 4 PR 모두 ERROR 상태. PR #137(hotfix)로 root cause fix + verify:ci에 build 추가. PR #136(vercel-promote)로 응급 대응 도구.</li>
+      <li><strong>QA</strong>: 4/4 PROD VERIFIED — <a href="parking24-sprint2-qa.html">QA 보고서</a></li>
+    </ul>
+
+    <h3>Sprint 3 — "분쟁 대응 + 감사"</h3>
+    <ul>
+      <li><strong>목표</strong>: 외부 노출 후 분쟁 추적 + 보안 강화</li>
+      <li><strong>핵심 효과</strong>: CSV export · last_login 추적 · <strong>admin_action_logs (영구 감사 로그)</strong></li>
+      <li><strong>특이사항</strong>: Sprint 1 패턴 안정화로 hotfix 1건만 발생(#142 ADMIN_PERMISSIONS drift). Sprint 2의 vercel/build 이슈는 #136/#137 덕분에 발생 안 함.</li>
+      <li><strong>QA</strong>: 4/4 PROD VERIFIED — logger +1 delta로 결정적 검증 — <a href="parking24-sprint3-qa.html">QA 보고서</a></li>
+    </ul>
+  </section>
+
+  <!-- ════════════════════ REMAIN ════════════════════ -->
+  <section id="remain">
+    <h2>🛣️ 잔여 + Sprint 4 후보</h2>
+
+    <h3>광고 시작 가능 상태 ✓</h3>
+    <p>로드맵 P1-P3 핵심 모두 완료. Sprint 1-3로 11/16건 처리. 잔여 5건은 P4 (백로그) + 광고 후 실측 데이터 기반 우선순위 결정.</p>
+
+    <h3>Sprint 4 후보 (광고 후 실 운영 데이터 기반)</h3>
+    <ul>
+      <li><strong>B7 확장</strong> — benefits / partners / settlements / banners 등 나머지 mutation logger 통합 (현재 5 endpoint만 통합됨, 외부 노출 늘면 우선순위 ↑)</li>
+      <li><strong>A4</strong> — 차트 server-aggregate / materialized view (Recharts 부담 ↑ 시)</li>
+      <li><strong>B5/B6</strong> — 이메일/SMS 발송 UI (Resend 통합, 법적 리스크 검토)</li>
+      <li><strong>2FA</strong> — Supabase Auth MFA enable (C1 후속)</li>
+      <li><strong>C2 soft delete</strong> — <code>deleted_at</code> 컬럼 (감사 추적 강화 시)</li>
+    </ul>
+
+    <h3>시스템적 개선 후보</h3>
+    <ul>
+      <li>middleware PERMISSIONS + ADMIN_PERMISSIONS 단일 source 통합 또는 lint 자동 검출 (#142 후속)</li>
+      <li>Vercel deploy workflow에 build 완료 wait + alias 자동 promote step 추가 (#136 영구화)</li>
+      <li><code>verify:ci</code> migration drift 자동 검출 강화 (현재 latest 숫자만 비교)</li>
+    </ul>
+  </section>
+
+  <!-- ════════════════════ FINAL TABLE ════════════════════ -->
+  <section>
+    <h2>📋 전체 머지된 PR 목록 (시간순)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>PR</th><th>Sprint</th><th>항목</th><th>Migration</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/128">#128</a></td><td>1</td><td>B8 admin-login title</td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/129">#129</a></td><td>1</td><td>A2 reservations 인덱스</td><td><span class="badge badge-mig">031</span></td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/130">#130</a></td><td>1</td><td>A1 Pagination</td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/131">#131</a></td><td>1</td><td>B5 EditableBlock 8 페이지</td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/132">#132</a></td><td>2</td><td>A3 Dashboard cache</td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/133">#133</a></td><td>2</td><td>B4 partner-api-errors resolved</td><td><span class="badge badge-mig">032</span></td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/134">#134</a></td><td>2</td><td>B1 검색 3 페이지</td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/135">#135</a></td><td>2</td><td>B2 Bulk 액션</td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/136">#136</a></td><td>2</td><td><strong>vercel-promote workflow</strong> <span class="badge badge-hotfix">hotfix</span></td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/137">#137</a></td><td>2</td><td><strong>route.ts 임의 export 제거 + build 추가</strong> <span class="badge badge-hotfix">hotfix</span></td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/138">#138</a></td><td>3</td><td>B3 CSV export</td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/139">#139</a></td><td>3</td><td>C1 admin_users 보안 컬럼</td><td><span class="badge badge-mig">033</span></td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/140">#140</a></td><td>3</td><td>B7-1 admin_action_logs 인프라</td><td><span class="badge badge-mig">034</span></td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/141">#141</a></td><td>3</td><td>B7-2 audit-logs UI + 통합</td><td>—</td></tr>
+          <tr><td><a href="https://github.com/roacompany/parking24/pull/142">#142</a></td><td>3</td><td><strong>ADMIN_PERMISSIONS audit-logs</strong> <span class="badge badge-hotfix">hotfix</span></td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>parking24 /admin 종합 보고서 · 16 PR · 4 Migration · 3 Sprint · 2026-05-15</div>
+  <div style="margin-top: 8px;">© 2026 PARKING 24 — <a href="index.html">진입점</a></div>
+</footer>
+</body>
+</html>
