@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>parking24 /admin Sprint 3 완료 보고서</title>
+<style>
+  :root {
+    --primary: #FF6B35;
+    --primary-dark: #E55A28;
+    --bg: #F4F5F7;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #DC2626;
+    --info: #3B82F6;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Pretendard", "Apple SD Gothic Neo", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; }
+  header { background: linear-gradient(135deg, #065F46 0%, #047857 100%); color: #fff; padding: 32px 20px 28px; border-bottom: 4px solid var(--success); }
+  header .container { max-width: 820px; margin: 0 auto; }
+  header h1 { margin: 0 0 8px; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; }
+  header h1 .check { color: #A7F3D0; }
+  header .meta { font-size: 13px; color: #D1FAE5; display: flex; gap: 12px; flex-wrap: wrap; }
+  header .meta span::before { content: "·"; margin-right: 12px; color: #6EE7B7; }
+  header .meta span:first-child::before { content: ""; margin: 0; }
+  header .backlinks { margin-top: 10px; font-size: 13px; }
+  header .backlinks a { color: #A7F3D0; text-decoration: none; margin-right: 12px; }
+  main { max-width: 820px; margin: 0 auto; padding: 20px 16px 48px; }
+  .hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+  @media (min-width: 600px) { .hero-stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--card); border-radius: 10px; padding: 14px; border: 1px solid var(--border); text-align: center; }
+  .stat .num { font-size: 26px; font-weight: 900; color: var(--success); letter-spacing: -0.02em; }
+  .stat .label { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  section { background: var(--card); border-radius: 12px; padding: 20px; margin: 16px 0; border: 1px solid var(--border); }
+  section h2 { font-size: 18px; margin: 0 0 14px; font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+  section h3 { font-size: 15px; margin: 18px 0 8px; font-weight: 700; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  code { background: #F3F4F6; padding: 2px 6px; border-radius: 4px; word-break: break-all; }
+  pre { background: #1E1E1E; color: #E5E7EB; padding: 14px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 12.5px; line-height: 1.55; white-space: pre; }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  .table-wrap { overflow-x: auto; margin: 10px 0; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: #F9FAFB; font-weight: 700; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  tbody tr:last-child td { border-bottom: none; }
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+  .badge-ok { background: #D1FAE5; color: #065F46; }
+  .badge-info { background: #DBEAFE; color: #1E40AF; }
+  .pr-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin: 10px 0; background: #F9FAFB; }
+  .pr-card.shipped { border-left: 4px solid var(--success); background: #ECFDF5; }
+  .pr-card .head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .pr-card .head .pr-num { font-family: monospace; font-weight: 700; color: var(--success); }
+  .pr-card .head h4 { margin: 0; font-size: 14.5px; font-weight: 700; }
+  .pr-card .body { font-size: 13.5px; color: var(--text); }
+  .pr-card .meta { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+  .pr-card a { color: var(--success); font-weight: 600; text-decoration: none; }
+  .callout { border-left: 4px solid var(--success); background: #ECFDF5; padding: 12px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 14px; }
+  .next-card { background: linear-gradient(135deg, #FFF7ED 0%, #FFEFE0 100%); border-left: 4px solid var(--primary); padding: 14px 16px; border-radius: 0 10px 10px 0; margin: 10px 0; }
+  .next-card h4 { margin: 0 0 6px; font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+  .next-card p { margin: 0; font-size: 13.5px; }
+  footer { text-align: center; color: var(--text-muted); font-size: 12px; padding: 32px 16px; border-top: 1px solid var(--border); margin-top: 32px; }
+  a { color: var(--primary-dark); }
+  @media (min-width: 600px) { body { font-size: 15.5px; } header h1 { font-size: 28px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1><span class="check">✅</span> /admin Sprint 3 완료 보고서</h1>
+    <div class="meta">
+      <span>2026-05-15</span>
+      <span>4 PR + 1 hotfix</span>
+      <span>Migration 033/034 PROD 적용</span>
+    </div>
+    <div class="backlinks">
+      <a href="parking24-analysis.html">← 본사이트</a>
+      <a href="parking24-sprint1-report.html">↩ Sprint 1</a>
+      <a href="parking24-sprint2-report.html">↩ Sprint 2</a>
+      <a href="parking24-admin-improvements.html">→ 전체 로드맵</a>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="callout">
+    Sprint 3 (B3 · C1 · B7) 4건 모두 main 머지 + production 배포 완료. "분쟁 대응 + 보안 강화 layer" 추가. Sprint 1/2 안전선 + 효율 위에 <strong>감사 추적 인프라</strong> 완비.
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat"><div class="num">4+1</div><div class="label">PR Merged</div></div>
+    <div class="stat"><div class="num">2</div><div class="label">Migration</div></div>
+    <div class="stat"><div class="num">+1.0K</div><div class="label">Lines Added</div></div>
+    <div class="stat"><div class="num">3</div><div class="label">신규 컴포넌트</div></div>
+  </div>
+
+  <section>
+    <h2>📦 머지된 PR</h2>
+
+    <div class="pr-card shipped">
+      <div class="head"><span class="pr-num">#138</span><h4>feat(admin): CSV export customers + settlements (B3)</h4></div>
+      <div class="body">
+        기존 reservations/csv 패턴 확장. 6+11 컬럼 CSV. UI "CSV" 버튼 추가.<br>
+        BOM 포함 UTF-8 / filename=<code>YYYYMMDD.csv</code> / 검색·필터 그대로 전달.
+      </div>
+      <div class="meta"><a href="https://github.com/roacompany/parking24/pull/138">github.com/roacompany/parking24/pull/138</a></div>
+    </div>
+
+    <div class="pr-card shipped">
+      <div class="head"><span class="pr-num">#139</span><h4>feat(admin): admin_users 보안 컬럼 + last_login 자동 갱신 (C1)</h4></div>
+      <div class="body">
+        <strong>Migration 033</strong>: <code>last_login_at</code> / <code>login_count</code> / <code>password_changed_at</code> + DESC NULLS LAST 인덱스.
+        <ul>
+          <li><code>api-auth.ts</code> <code>maybeRecordLogin()</code> — 1h throttle (fail-open)</li>
+          <li>UI: 최근 로그인 컬럼 (30일+ orange 강조) + 로그인 횟수</li>
+        </ul>
+      </div>
+      <div class="meta">
+        <strong>prod 적용:</strong> 컬럼 3개 + 인덱스 ✓<br>
+        <a href="https://github.com/roacompany/parking24/pull/139">github.com/roacompany/parking24/pull/139</a>
+      </div>
+    </div>
+
+    <div class="pr-card shipped">
+      <div class="head"><span class="pr-num">#140</span><h4>feat(admin): admin_action_logs 인프라 (B7-1)</h4></div>
+      <div class="body">
+        <strong>Migration 034</strong>: <code>admin_action_logs</code> 테이블 + 3 인덱스 + RLS service_role only.
+        <ul>
+          <li><code>admin_user_id + admin_email</code> (삭제 후에도 추적)</li>
+          <li><code>impersonating_admin_id</code> — SUPER_ADMIN 포털 전환 시 원본</li>
+          <li><code>before_data / after_data</code> JSONB diff</li>
+          <li>IP / User-Agent / created_at</li>
+        </ul>
+        <code>src/lib/admin-action-logger.ts</code> — <code>logAdminAction()</code> 헬퍼:
+        <ul>
+          <li>IP/UA 자동 추출 (x-forwarded-for 우선, x-real-ip fallback)</li>
+          <li>middleware <code>x-impersonating-admin-id</code> 헤더 감지</li>
+          <li><strong>fail-open</strong>: INSERT 실패해도 mutation 막지 않음 (console.warn)</li>
+          <li>JSON 4KB trim</li>
+        </ul>
+      </div>
+      <div class="meta">
+        <strong>prod 적용:</strong> 테이블 생성 ✓<br>
+        <a href="https://github.com/roacompany/parking24/pull/140">github.com/roacompany/parking24/pull/140</a>
+      </div>
+    </div>
+
+    <div class="pr-card shipped">
+      <div class="head"><span class="pr-num">#141</span><h4>feat(admin): audit-logs UI + 4 mutation 통합 (B7-2)</h4></div>
+      <div class="body">
+        <strong>UI <code>/admin/audit-logs</code></strong> (SUPER_ADMIN 전용):
+        <ul>
+          <li>리소스/기간 필터 + 상위 액션 chip + Pagination (Sprint 1 A1 재사용)</li>
+          <li>row expandable: before(red) / after(green) JSON diff + impersonation</li>
+        </ul>
+        <strong>API GET</strong> <code>/api/admin/audit-logs</code> (SUPER_ADMIN 외 403):
+        <ul>
+          <li>필터: admin_user_id / action / resource_type / since (24h/7d/30d/ISO)</li>
+          <li>join: admin_users (admin / impersonator name)</li>
+        </ul>
+        <strong>Mutation 통합</strong> (5개 endpoint, fail-open logger 호출):
+        <ul>
+          <li>reservations PUT (UPDATE_RESERVATION_STATUS)</li>
+          <li>reservations PATCH (BULK_UPDATE_RESERVATIONS)</li>
+          <li>airports POST/PUT/DELETE (CREATE/UPDATE/DELETE_AIRPORT)</li>
+        </ul>
+        benefits/partners/settlements 등은 후속 PR (광고 시작 후 실 빈도 따라 확장).
+      </div>
+      <div class="meta">
+        <a href="https://github.com/roacompany/parking24/pull/141">github.com/roacompany/parking24/pull/141</a>
+      </div>
+    </div>
+
+    <div class="pr-card shipped">
+      <div class="head"><span class="pr-num">#142</span><h4>fix(admin): audit-logs ADMIN_PERMISSIONS 추가 (B7-2 hotfix)</h4></div>
+      <div class="body">
+        Sprint 3 E2E 진행 중 <code>/api/admin/audit-logs</code> GET → 403 발견. 원인: <code>ADMIN_PERMISSIONS</code> map 에 "audit-logs" 키 누락.<br>
+        수정: SUPER_ADMIN read 추가. middleware ACL 과 동일 정책.
+      </div>
+      <div class="meta">
+        <a href="https://github.com/roacompany/parking24/pull/142">github.com/roacompany/parking24/pull/142</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>📈 Sprint 1-3 누적</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sprint</th><th>주제</th><th>핵심 효과</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>광고 trigger 안전선</td><td>pagination 50/page · created_at 인덱스 · login title · EditableBlock</td></tr>
+          <tr><td>2</td><td>운영 효율</td><td>dashboard cache 5분 · errors resolved 토글 · 검색 3 페이지 · bulk 100건</td></tr>
+          <tr><td><strong>3</strong></td><td><strong>분쟁 대응 + 감사</strong></td><td><strong>CSV export · last_login 추적 · admin_action_logs 영구 기록</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>품질 게이트</h3>
+    <ul>
+      <li>✅ 모든 PR <code>verify:ci</code> PASS (build 포함 — Sprint 2 후속 fix)</li>
+      <li>✅ Migration 033/034 production 적용 검증</li>
+      <li>✅ E2E 검증 — B3 CSV / C1 throttle / B7 UI + logger 동작</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>⏭️ 사용자 검증 권장</h2>
+    <div class="next-card">
+      <h4>1. CSV 다운로드</h4>
+      <p>/admin/customers 와 /admin/settlements 에서 "CSV" 버튼 클릭 → 한글 정상 BOM UTF-8 다운로드.</p>
+    </div>
+    <div class="next-card">
+      <h4>2. /admin/users — 로그인 컬럼</h4>
+      <p>본인 admin 계정의 최근 로그인 + 로그인 횟수가 표기되는지. 30일+ 미접속 계정 orange 강조.</p>
+    </div>
+    <div class="next-card">
+      <h4>3. /admin/audit-logs (신규 메뉴)</h4>
+      <p>사이드바 "감사 로그" 클릭 → 리소스/기간 필터 → 예약 상태 변경 후 row 추가 확인 → expandable로 before/after diff.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>🛣️ Sprint 4 후보</h2>
+    <ul>
+      <li><strong>B7 확장</strong>: benefits / partners / settlements / banners 등 나머지 mutation 에 logger 통합</li>
+      <li><strong>A4</strong>: 차트 데이터 server-aggregate / materialized view (광고 후 부하 보고 결정)</li>
+      <li><strong>B5</strong>: 이메일/SMS 발송 UI (Resend 통합, 법적 리스크 검토 필요)</li>
+      <li><strong>2FA</strong>: Supabase Auth MFA enable + UI (C1 후속)</li>
+    </ul>
+    <p>광고 시작 후 실 운영 데이터 + 요구사항 따라 우선순위 결정.</p>
+  </section>
+</main>
+
+<footer>
+  <div>Sprint 3 (4 PR + 1 hotfix · #138 #139 #140 #141 #142) · 2026-05-15 · production live</div>
+  <div style="margin-top: 8px;">© 2026 PARKING 24 /admin Sprint 3 Report</div>
+</footer>
+</body>
+</html>
