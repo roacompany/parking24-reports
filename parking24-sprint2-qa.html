@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>parking24 Sprint 2 QA 검증 보고서</title>
+<style>
+  :root {
+    --primary: #FF6B35;
+    --primary-dark: #E55A28;
+    --bg: #F4F5F7;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #DC2626;
+    --info: #3B82F6;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Pretendard", "Apple SD Gothic Neo", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; }
+  header { background: linear-gradient(135deg, #1E40AF 0%, #3730A3 100%); color: #fff; padding: 32px 20px 28px; border-bottom: 4px solid var(--info); }
+  header .container { max-width: 820px; margin: 0 auto; }
+  header h1 { margin: 0 0 8px; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; }
+  header h1 .accent { color: #93C5FD; }
+  header .meta { font-size: 13px; color: #C7D2FE; display: flex; gap: 12px; flex-wrap: wrap; }
+  header .meta span::before { content: "·"; margin-right: 12px; color: #818CF8; }
+  header .meta span:first-child::before { content: ""; margin: 0; }
+  header .backlinks { margin-top: 10px; font-size: 13px; }
+  header .backlinks a { color: #93C5FD; text-decoration: none; margin-right: 14px; }
+  main { max-width: 820px; margin: 0 auto; padding: 20px 16px 48px; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+  @media (min-width: 600px) { .summary-grid { grid-template-columns: repeat(4, 1fr); } }
+  .summary { background: var(--card); border-radius: 10px; padding: 16px; border: 1px solid var(--border); text-align: center; }
+  .summary.pass { border-color: var(--success); background: #ECFDF5; }
+  .summary.partial { border-color: var(--warning); background: #FFFBEB; }
+  .summary .id { font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; }
+  .summary .label { font-size: 13px; font-weight: 700; margin: 4px 0; }
+  .summary .verdict { font-size: 20px; font-weight: 900; }
+  .summary.pass .verdict { color: var(--success); }
+  .summary.partial .verdict { color: var(--warning); }
+  section { background: var(--card); border-radius: 12px; padding: 20px; margin: 16px 0; border: 1px solid var(--border); }
+  section h2 { font-size: 18px; margin: 0 0 14px; font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+  section h2 .verdict { background: var(--success); color: #fff; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  section h2 .verdict.warn { background: var(--warning); }
+  section h2 .verdict.bad { background: var(--danger); }
+  section h3 { font-size: 14px; margin: 16px 0 6px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  code { background: #F3F4F6; padding: 2px 6px; border-radius: 4px; word-break: break-all; }
+  pre { background: #0F172A; color: #E2E8F0; padding: 14px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 12px; line-height: 1.55; white-space: pre; }
+  pre .ok { color: #86EFAC; }
+  pre .bad { color: #FCA5A5; }
+  pre .key { color: #93C5FD; }
+  pre .num { color: #FCD34D; }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  .table-wrap { overflow-x: auto; margin: 10px 0; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: #F9FAFB; font-weight: 700; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  tbody tr:last-child td { border-bottom: none; }
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+  .badge-pass { background: #D1FAE5; color: #065F46; }
+  .badge-fail { background: #FEE2E2; color: #991B1B; }
+  .badge-warn { background: #FEF3C7; color: #92400E; }
+  .badge-info { background: #DBEAFE; color: #1E40AF; }
+  .callout { border-left: 4px solid var(--info); background: #EFF6FF; padding: 12px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 14px; }
+  .callout.warn { border-color: var(--warning); background: #FFFBEB; }
+  .callout.danger { border-color: var(--danger); background: #FEF2F2; }
+  .action-card {
+    background: linear-gradient(135deg, #FFF7ED 0%, #FFEFE0 100%);
+    border-left: 4px solid var(--primary);
+    padding: 14px 16px;
+    border-radius: 0 10px 10px 0;
+    margin: 10px 0;
+  }
+  .action-card h4 { margin: 0 0 6px; font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+  .action-card p { margin: 0; font-size: 13.5px; }
+  footer { text-align: center; color: var(--text-muted); font-size: 12px; padding: 32px 16px; border-top: 1px solid var(--border); margin-top: 32px; }
+  a { color: var(--primary-dark); }
+  @media (min-width: 600px) { body { font-size: 15.5px; } header h1 { font-size: 28px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>🔬 Sprint 2 <span class="accent">E2E QA</span> 검증 보고서</h1>
+    <div class="meta">
+      <span>2026-05-15</span>
+      <span>1/4 PROD VERIFIED</span>
+      <span>3/4 prod 배포 stuck</span>
+    </div>
+    <div class="backlinks">
+      <a href="index.html">← 진입점</a>
+      <a href="parking24-sprint2-report.html">↩ Sprint 2 결과</a>
+      <a href="parking24-admin-improvements.html">→ 전체 로드맵</a>
+    </div>
+  </div>
+</header>
+<main>
+
+  <div class="callout danger">
+    <strong>중요</strong>: 코드 + 단위 테스트 + Migration 검증은 4/4 PASS. 하지만 <strong>Vercel production 배포가 PR #133/#134/#135 모두 미반영</strong> (35분+ 지났음에도 PATCH endpoint 405). 사용자 액션 권장.
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary pass"><div class="id">A3</div><div class="label">cache</div><div class="verdict">✅</div></div>
+    <div class="summary partial"><div class="id">B4</div><div class="label">resolved</div><div class="verdict">⚠️</div></div>
+    <div class="summary partial"><div class="id">B1</div><div class="label">search</div><div class="verdict">⚠️</div></div>
+    <div class="summary partial"><div class="id">B2</div><div class="label">bulk</div><div class="verdict">⚠️</div></div>
+  </div>
+
+  <section>
+    <h2>A3 · Dashboard cache <span class="verdict">PROD VERIFIED</span></h2>
+
+    <h3>응답시간 측정 (admin 인증 + /api/admin)</h3>
+    <pre><code>cold (1차):  <span class="num">234 ms</span>
+warm (2차):  <span class="num">178 ms</span>   ← <span class="ok">-24% cache hit</span>
+has_stats:   <span class="ok">true</span></code></pre>
+
+    <p>2번째 요청부터 응답시간 단축. <code>unstable_cache(revalidate: 300)</code> 정상 동작 추정. 예약 PUT 시 <code>revalidateTag("admin-dashboard")</code> 즉시 invalidate (별도 시나리오 검증 필요).</p>
+
+    <h3>판정</h3>
+    <ul>
+      <li>✅ prod에 PR #132 배포 완료 (다른 PR보다 먼저 머지)</li>
+      <li>✅ cache hit 효과 검증 — burst 새로고침 시 DB 부하 ↓</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>B4 · partner-api-errors resolved <span class="verdict warn">코드 OK · PROD 미배포</span></h2>
+
+    <h3>1. Migration 032 prod 적용 ✓</h3>
+    <pre><code>SELECT column_name FROM information_schema.columns
+WHERE table_name='partner_api_errors'
+  AND column_name IN ('resolved_at','resolved_by','resolved_note');
+
+[
+  <span class="ok">"resolved_at"</span>,
+  <span class="ok">"resolved_by"</span>,
+  <span class="ok">"resolved_note"</span>
+]
+
+idx_partner_api_errors_unresolved   ← <span class="ok">partial index 생성</span></code></pre>
+
+    <h3>2. API/UI prod 배포 상태</h3>
+    <pre><code>OPTIONS /api/admin/partner-api-errors
+allow: GET, HEAD, OPTIONS   ← <span class="bad">PATCH 누락</span>
+patch_registered: <span class="bad">false</span>
+
+/admin/partner-api-errors HTML:
+has_resolved_filter: <span class="bad">false</span>
+has_resolved_button: <span class="bad">false</span></code></pre>
+    <p>PR #133이 04:31 머지됐는데 35분+ 지났는데도 prod에 PATCH endpoint + UI 변경 미반영. Vercel "Deploy to Vercel" workflow는 success로 떴으나 INITIALIZING 상태에서 promote 안 됨.</p>
+
+    <h3>판정</h3>
+    <ul>
+      <li>✅ Migration 032 prod 적용 (DB 레벨 검증 완료)</li>
+      <li>⚠️ API PATCH endpoint prod 미반영 — Vercel build queue 또는 promote 지연</li>
+      <li>⚠️ UI 처리됨 토글/필터 prod 미반영</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>B1 · 검색 필터 3 페이지 <span class="verdict warn">코드 OK · PROD 미배포</span></h2>
+
+    <h3>3 페이지 UI mount 검증</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>페이지</th><th>has_search</th><th>API GET ?search=test</th></tr></thead>
+        <tbody>
+          <tr><td><code>/admin/airports</code></td><td><span class="badge badge-fail">false</span></td><td>200 ✓ (인증된 호출)</td></tr>
+          <tr><td><code>/admin/benefits</code></td><td><span class="badge badge-fail">false</span></td><td>200 ✓</td></tr>
+          <tr><td><code>/admin/partners</code></td><td><span class="badge badge-fail">false</span></td><td>200 ✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>API GET 200으로 응답하지만 신규 <code>?search</code> 파라미터 처리는 미반영 (기존 GET 동작과 응답 동일). UI에 <code>ListSearchFilter</code> 컴포넌트 mount 안 됨 (검색 input placeholder 미존재).</p>
+
+    <h3>판정</h3>
+    <ul>
+      <li>✅ 코드 main 머지 + 248 tests PASS</li>
+      <li>⚠️ UI 변경 prod 미반영</li>
+      <li>⚠️ API <code>?search</code> 처리 prod 미반영 (단순 GET 결과만 응답)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>B2 · 예약 일괄 변경 <span class="verdict warn">코드 OK · PROD 미배포</span></h2>
+
+    <h3>1. PATCH endpoint 등록 상태</h3>
+    <pre><code>OPTIONS /api/admin/reservations
+allow: GET, HEAD, OPTIONS, PUT   ← <span class="bad">PATCH 누락</span>
+patch_registered: <span class="bad">false</span>
+
+PATCH /api/admin/reservations { ids: [], status: "CONFIRMED" }
+→ HTTP <span class="bad">405</span> Method Not Allowed (empty body)</code></pre>
+
+    <h3>2. UI 체크박스/bulk toolbar mount 상태</h3>
+    <pre><code>/admin/reservations HTML:
+checkbox_count: <span class="bad">0</span>
+has_aria_label('전체 선택'): <span class="bad">false</span>
+bulk_bar_visible: <span class="bad">false</span></code></pre>
+
+    <h3>3. 검증 가능했던 부분</h3>
+    <ul>
+      <li>코드 main 머지 완료 (commit fec7a73)</li>
+      <li><code>ReservationBulkBar.tsx</code> 신규 + <code>ReservationTable.tsx</code> 체크박스 추가</li>
+      <li>verify:ci 248 tests PASS</li>
+    </ul>
+
+    <h3>판정</h3>
+    <ul>
+      <li>✅ 코드 + 단위 테스트 PASS</li>
+      <li>⚠️ PATCH endpoint prod 미반영</li>
+      <li>⚠️ UI 변경 prod 미반영</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>🚨 root cause 분석 — Vercel 배포 stuck</h2>
+
+    <h3>증상</h3>
+    <pre><code>PR #132 (A3 cache)    머지 04:31:30 → <span class="ok">prod 반영 됨</span>
+PR #133 (B4 resolved) 머지 04:31:35 → <span class="bad">prod 미반영</span> (35분+)
+PR #134 (B1 search)   머지 04:40:01 → <span class="bad">prod 미반영</span>
+PR #135 (B2 bulk)     머지 04:44:05 → <span class="bad">prod 미반영</span></code></pre>
+
+    <h3>워크플로우 로그</h3>
+    <pre><code>"Deploy to Vercel" workflow ✓ success
+Deployment created: parking24-mdttvzane-...vercel.app
+State: <span class="num">INITIALIZING</span>   ← workflow는 trigger만 하고 종료
+                            (실제 build/deploy는 Vercel 백그라운드)</code></pre>
+
+    <h3>가능 원인</h3>
+    <ul>
+      <li><strong>Vercel build queue 적체</strong>: 짧은 시간에 4 PR 연속 머지로 build queue 큐 적체 + free/hobby plan 동시 build 1개 제한</li>
+      <li><strong>Build 자체 fail</strong>: GitHub Actions에서는 deployment 생성만 trigger하고 종료 → 이후 build 실패해도 알림 없음</li>
+      <li><strong>Promotion 안 됨</strong>: build 성공해도 production URL 으로 promote 안 됐을 가능성</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>📋 검증 종합 결과</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>PR</th><th>코드/테스트</th><th>Migration</th><th>UI mount</th><th>API endpoint</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>#132 A3</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>—</td>
+            <td>cache 효과 ✓</td>
+            <td><span class="badge badge-pass">prod live</span></td>
+          </tr>
+          <tr>
+            <td>#133 B4</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td><span class="badge badge-pass">prod 적용</span></td>
+            <td><span class="badge badge-fail">미반영</span></td>
+            <td><span class="badge badge-fail">PATCH 미등록</span></td>
+          </tr>
+          <tr>
+            <td>#134 B1</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>—</td>
+            <td><span class="badge badge-fail">검색 input 없음</span></td>
+            <td><span class="badge badge-warn">GET 200 (search 처리 불명)</span></td>
+          </tr>
+          <tr>
+            <td>#135 B2</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>—</td>
+            <td><span class="badge badge-fail">체크박스 0개</span></td>
+            <td><span class="badge badge-fail">PATCH 405</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>⏭️ 권장 액션 (사용자)</h2>
+
+    <div class="action-card">
+      <h4>1. Vercel Dashboard 직접 확인 (가장 빠름)</h4>
+      <p>Vercel team 권한 있는 계정으로 Dashboard 열어 PR #133/#134/#135 deployment 상태 확인. INITIALIZING → BUILDING → READY 진행 여부, 또는 ERROR 단계 확인. ERROR면 build log 보고 fix.</p>
+    </div>
+
+    <div class="action-card">
+      <h4>2. 수동 Promote (build 성공했는데 promote 안 된 경우)</h4>
+      <p>최신 deployment 가 build success인데 production 으로 promote 안 됐으면 Dashboard에서 "Promote to Production" 클릭.</p>
+    </div>
+
+    <div class="action-card">
+      <h4>3. 자동 promote 안 됐다면 workflow 개선</h4>
+      <p>현재 <code>Deploy to Vercel</code> workflow는 deployment trigger 만 하고 종료. build 완료까지 wait + status 확인하는 step 추가 권장 (별도 PR).</p>
+    </div>
+
+    <div class="action-card">
+      <h4>4. prod 배포 완료 후 E2E 재실행</h4>
+      <p>배포 완료 시 본 보고서 E2E 스크립트(임시 SUPER_ADMIN 자동 생성) 재실행해서 B4/B1/B2 모두 PROD VERIFIED 판정 가능.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>🛠️ 검증 방법</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>검증 축</th><th>도구</th><th>대상</th></tr></thead>
+        <tbody>
+          <tr><td>Production HTML</td><td><code>curl</code> + headless browser</td><td>title / search input / 체크박스 mount</td></tr>
+          <tr><td>DB 스키마</td><td>Supabase Management API</td><td>partner_api_errors 컬럼 (Migration 032 검증)</td></tr>
+          <tr><td>API endpoint</td><td>headless browser cookie + fetch</td><td>GET / OPTIONS / PATCH (Allow 헤더 분석)</td></tr>
+          <tr><td>응답시간</td><td>Node fetch + Date.now()</td><td>A3 cache cold vs warm</td></tr>
+          <tr><td>UI 상호작용</td><td><code>gstack/browse</code></td><td>체크박스 클릭 → bulk bar 등장 여부</td></tr>
+          <tr><td>유닛 테스트</td><td><code>npm test</code></td><td>parsePagination + 전체 248 tests</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>안전선 (Sprint 1 패턴 동일)</h3>
+    <ul>
+      <li>임시 SUPER_ADMIN 계정 자동 생성 + cleanup (finally 강제)</li>
+      <li>read-only 위주, PATCH는 partial success 응답 검증만 (실제 데이터 변경 X)</li>
+      <li>스크립트는 검증 후 삭제 (one-shot)</li>
+      <li>임시 계정 prefix <code>qa-s2-</code> 잔여 확인 — 0건</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <div>Sprint 2 E2E QA · A3 PASS / B4·B1·B2 PROD propagation 대기 · 2026-05-15</div>
+  <div style="margin-top: 8px;">© 2026 PARKING 24 — <a href="parking24-sprint2-report.html">Sprint 2 결과</a> · <a href="parking24-admin-improvements.html">로드맵</a></div>
+</footer>
+</body>
+</html>
